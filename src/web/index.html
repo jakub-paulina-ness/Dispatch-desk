@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dispatch Desk — kit strip, decisions, telemetry</title>
+  <link rel="stylesheet" href="desk.css">
+</head>
+<body>
+  <a class="skip-link" href="#kit">Skip to kit strip</a>
+
+  <header class="masthead">
+    <p class="masthead__kicker">Layer B board · kit roster only</p>
+    <div class="masthead__row">
+      <h1>Dispatch desk</h1>
+      <p class="masthead__meta">
+        <span>J-01 · J-02</span>
+        <span>T-11 · T-12 · T-14</span>
+        <span>DSP-1…DSP-4</span>
+        <time id="desk-clock" datetime=""></time>
+      </p>
+    </div>
+    <p class="masthead__note">
+      Original desk for S-10. Decisions come from fixture events until S-14 serves
+      <code>/api/dispatch</code>. No invented trucks. No workshop chrome.
+    </p>
+  </header>
+
+  <main>
+    <section id="kit" aria-labelledby="kit-heading">
+      <header class="section-head">
+        <p class="section-head__index">01</p>
+        <div>
+          <h2 id="kit-heading">Kit strip</h2>
+          <p>Inspect the four immutable files under <code>instructions/</code>. Do not edit them from this desk.</p>
+        </div>
+      </header>
+      <ul class="kit-strip">
+        <li>
+          <span class="kit-strip__kind">rules</span>
+          <code>dispatch_rules.md</code>
+          <span class="kit-strip__hint">DSP-1…DSP-4</span>
+        </li>
+        <li>
+          <span class="kit-strip__kind">roster</span>
+          <code>vehicles.json</code>
+          <span class="kit-strip__hint">T-11, T-12, T-14</span>
+        </li>
+        <li>
+          <span class="kit-strip__kind">queue</span>
+          <code>jobs.json</code>
+          <span class="kit-strip__hint">J-01 Cluj, J-02 Oradea</span>
+        </li>
+        <li>
+          <span class="kit-strip__kind">mcp</span>
+          <code>rules_mcp.py</code>
+          <span class="kit-strip__hint">lookup_rule / handle()</span>
+        </li>
+      </ul>
+    </section>
+
+    <div class="split">
+      <section id="jobs" aria-labelledby="jobs-heading">
+        <header class="section-head">
+          <p class="section-head__index">02</p>
+          <div>
+            <h2 id="jobs-heading">Job queue</h2>
+            <p>Both jobs stay on the board. Roster is not mutated between them.</p>
+          </div>
+        </header>
+        <ol class="job-queue">
+          <li class="ticket ticket--job">
+            <p class="ticket__id">J-01</p>
+            <p class="ticket__title">Cluj</p>
+            <p class="ticket__stat">40 km from garage</p>
+          </li>
+          <li class="ticket ticket--job">
+            <p class="ticket__id">J-02</p>
+            <p class="ticket__title">Oradea</p>
+            <p class="ticket__stat">160 km from garage</p>
+          </li>
+        </ol>
+      </section>
+
+      <section id="fleet" aria-labelledby="fleet-heading">
+        <header class="section-head">
+          <p class="section-head__index">03</p>
+          <div>
+            <h2 id="fleet-heading">Fleet</h2>
+            <p>First-fit in kit order. T-14 is out of service on both jobs.</p>
+          </div>
+        </header>
+        <ul class="fleet">
+          <li class="ticket ticket--free">
+            <p class="ticket__id">T-11</p>
+            <p class="ticket__title">free</p>
+            <p class="ticket__stat">180 km range · hours_ok</p>
+          </li>
+          <li class="ticket ticket--busy">
+            <p class="ticket__id">T-12</p>
+            <p class="ticket__title">busy</p>
+            <p class="ticket__stat">90 km range · hours_ok</p>
+          </li>
+          <li class="ticket ticket--red">
+            <p class="ticket__id">T-14</p>
+            <p class="ticket__title">red / out of service</p>
+            <p class="ticket__stat">do not assign · hours_ok false</p>
+          </li>
+        </ul>
+      </section>
+    </div>
+
+    <section id="decisions" aria-labelledby="decisions-heading">
+      <header class="section-head">
+        <p class="section-head__index">04</p>
+        <div>
+          <h2 id="decisions-heading">Decision board</h2>
+          <p>
+            Six DispatchEvent rows (2 jobs × 3 trucks). Kind is exactly ASSIGN, SKIP, or REFUSE.
+            T-14 is styled as REFUSE. Data:
+            <span id="dispatch-source" class="source-pill">embedded fixture</span>
+          </p>
+        </div>
+      </header>
+      <div class="table-wrap">
+        <table class="grid" id="decision-table">
+          <thead>
+            <tr>
+              <th scope="col">Job</th>
+              <th scope="col">City</th>
+              <th scope="col">km</th>
+              <th scope="col">Vehicle</th>
+              <th scope="col">Kind</th>
+              <th scope="col">dsp_ids</th>
+              <th scope="col">Quotes</th>
+            </tr>
+          </thead>
+          <tbody id="decision-body">
+            <tr data-kind="ASSIGN" data-vehicle="T-11">
+              <td>J-01</td><td>Cluj</td><td>40</td><td>T-11</td>
+              <td><span class="kind kind--assign">ASSIGN</span></td>
+              <td>DSP-1, DSP-2</td>
+              <td>
+                <blockquote>DSP-1. Assign only a vehicle with status free and hours_ok true.</blockquote>
+                <blockquote>DSP-2. Job distance must be less than vehicle range_km.</blockquote>
+              </td>
+            </tr>
+            <tr data-kind="SKIP" data-vehicle="T-12">
+              <td>J-01</td><td>Cluj</td><td>40</td><td>T-12</td>
+              <td><span class="kind kind--skip">SKIP</span></td>
+              <td>DSP-1</td>
+              <td><blockquote>DSP-1. Assign only a vehicle with status free and hours_ok true.</blockquote></td>
+            </tr>
+            <tr class="row-refuse" data-kind="REFUSE" data-vehicle="T-14">
+              <td>J-01</td><td>Cluj</td><td>40</td><td>T-14</td>
+              <td><span class="kind kind--refuse">REFUSE</span></td>
+              <td>DSP-3</td>
+              <td><blockquote>DSP-3. Status red is out of service. Do not assign. Quote this rule.</blockquote></td>
+            </tr>
+            <tr data-kind="ASSIGN" data-vehicle="T-11">
+              <td>J-02</td><td>Oradea</td><td>160</td><td>T-11</td>
+              <td><span class="kind kind--assign">ASSIGN</span></td>
+              <td>DSP-1, DSP-2</td>
+              <td>
+                <blockquote>DSP-1. Assign only a vehicle with status free and hours_ok true.</blockquote>
+                <blockquote>DSP-2. Job distance must be less than vehicle range_km.</blockquote>
+              </td>
+            </tr>
+            <tr data-kind="SKIP" data-vehicle="T-12">
+              <td>J-02</td><td>Oradea</td><td>160</td><td>T-12</td>
+              <td><span class="kind kind--skip">SKIP</span></td>
+              <td>DSP-1</td>
+              <td><blockquote>DSP-1. Assign only a vehicle with status free and hours_ok true.</blockquote></td>
+            </tr>
+            <tr class="row-refuse" data-kind="REFUSE" data-vehicle="T-14">
+              <td>J-02</td><td>Oradea</td><td>160</td><td>T-14</td>
+              <td><span class="kind kind--refuse">REFUSE</span></td>
+              <td>DSP-3</td>
+              <td><blockquote>DSP-3. Status red is out of service. Do not assign. Quote this rule.</blockquote></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <div class="split">
+      <section id="telemetry" aria-labelledby="telemetry-heading">
+        <header class="section-head">
+          <p class="section-head__index">05</p>
+          <div>
+            <h2 id="telemetry-heading">Driver telemetry</h2>
+            <p>
+              TelemetryEvent after ASSIGN only. T-12 and T-14 never start a driver.
+              Source: <span id="telemetry-source" class="source-pill">fixture snapshot</span>
+            </p>
+          </div>
+        </header>
+        <div id="telemetry-panel">
+          <article class="telemetry-card" data-status="en_route">
+            <header>
+              <p class="ticket__id">T-11</p>
+              <p><span class="status-pill status-pill--en_route">en_route</span> on J-02</p>
+            </header>
+            <dl class="metrics">
+              <div><dt>Speed</dt><dd>72 km/h</dd></div>
+              <div><dt>Junction stop</dt><dd>no</dd></div>
+              <div><dt>Drive</dt><dd>45 kW</dd></div>
+              <div><dt>SOC</dt><dd>38%</dd></div>
+              <div><dt>Remaining range</dt><dd>68 km</dd></div>
+              <div><dt>From garage</dt><dd>90 km</dd></div>
+              <div><dt>Charger</dt><dd>—</dd></div>
+              <div><dt>Charger power</dt><dd>—</dd></div>
+            </dl>
+          </article>
+        </div>
+      </section>
+
+      <section id="charge" aria-labelledby="charge-heading">
+        <header class="section-head">
+          <p class="section-head__index">06</p>
+          <div>
+            <h2 id="charge-heading">Charge</h2>
+            <p>
+              Power from <code>.docs/reference/locations.json</code>.
+              CS-2 is nearest after Oradea. CS-4 is the unreachable trap.
+              Source: <span id="locations-source" class="source-pill">embedded locations</span>
+            </p>
+          </div>
+        </header>
+        <div class="table-wrap">
+          <table class="grid" id="charge-table">
+            <thead>
+              <tr>
+                <th scope="col">id</th>
+                <th scope="col">Name</th>
+                <th scope="col">power_kw</th>
+                <th scope="col">km Cluj</th>
+                <th scope="col">km Oradea</th>
+                <th scope="col">Role</th>
+              </tr>
+            </thead>
+            <tbody id="charge-body">
+              <tr data-charger="G-0">
+                <td>G-0</td><td>Garage</td><td>22 kW</td><td>0</td><td>0</td>
+                <td>depot start / return</td>
+              </tr>
+              <tr data-charger="CS-1">
+                <td>CS-1</td><td>Cluj peri-urban DC</td><td>50 kW</td><td>20</td><td>40</td>
+                <td>nearest after Cluj</td>
+              </tr>
+              <tr class="row-highlight" data-charger="CS-2">
+                <td>CS-2</td><td>Oradea highway DC</td><td>150 kW</td><td>60</td><td>20</td>
+                <td>nearest after Oradea</td>
+              </tr>
+              <tr data-charger="CS-3">
+                <td>CS-3</td><td>Corridor DC</td><td>50 kW</td><td>100</td><td>47</td>
+                <td>backup</td>
+              </tr>
+              <tr class="row-unreachable" data-charger="CS-4">
+                <td>CS-4</td><td>Ultra-fast (out of range)</td><td>350 kW</td><td>300</td><td>200</td>
+                <td>unreachable</td>
+              </tr>
+              <tr data-charger="CS-5">
+                <td>CS-5</td><td>Remote AC</td><td>22 kW</td><td>350</td><td>74</td>
+                <td>too far / slow</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="desk-foot">
+    <p>S-10 static desk. Fetch fixture when HTTP allows; otherwise keep the inlined six events. Bind <code>127.0.0.1:8765</code> later in S-14.</p>
+  </footer>
+
+  <script src="desk.js" defer></script>
+</body>
+</html>

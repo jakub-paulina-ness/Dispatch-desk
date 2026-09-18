@@ -1,0 +1,17 @@
+{
+  "note": "Sample TelemetryEvent until S-12/S-14. T-11 only — T-12 SKIP and T-14 REFUSE have no driver.",
+  "events": [
+    {
+      "vehicle_id": "T-11",
+      "job_id": "J-02",
+      "status": "en_route",
+      "speed_kmh": 72,
+      "drive_power_kw": 45,
+      "soc_pct": 38.0,
+      "range_km": 68.0,
+      "km_from_garage": 90.0,
+      "charger_id": null,
+      "charger_power_kw": null
+    }
+  ]
+}
