@@ -33,7 +33,7 @@ Everyone reads S-00
 | [S-04](S-04-demo-runbook.md) | Must-show runbook | Peťo | A graded | ready | plan sign-off |
 | [S-05](S-05-grok-stack.md) | Skill + hook + plugin + MCP + show_lab | Jakub | A graded | **done** | S-00 (not S-04) |
 | [S-10](S-10-html-desk.md) | HTML desk sections | Marek | B wow | ready | S-00 only (mock data OK) |
-| [S-11](S-11-dispatcher-agent.md) | Dispatcher agent | Peťo | B wow | ready | S-00; wire engine when S-02 exists |
+| [S-11](S-11-dispatcher-agent.md) | Dispatcher agent | Peťo | B wow | **done** | S-00; wire engine when S-02 exists |
 | [S-12](S-12-driver-agent.md) | Electric driver + charge | Marian | B wow | **done** | S-00 + S-13; fixture ASSIGN OK |
 | [S-13](S-13-locations-data.md) | Locations + charger power | Jakub | B data | **done** | — |
 | [S-14](S-14-thin-server.md) | Stdlib server | Marian | B stretch | ready | S-02 + S-10; cut if demo > 4 min |

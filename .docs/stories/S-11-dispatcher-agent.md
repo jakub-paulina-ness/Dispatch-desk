@@ -4,7 +4,7 @@
 |---|---|
 | **Owner** | Peťo |
 | **Layer** | B — wow |
-| **Status** | ready |
+| **Status** | done |
 | **Blocked on** | [S-00](S-00-contracts.md). Real engine when S-02 exists; fixtures are enough to unblock S-10/S-12. |
 | **Unblocks** | S-10 live board, S-12 ASSIGN stream |
 
