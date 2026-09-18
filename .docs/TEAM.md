@@ -17,6 +17,13 @@ Jedna vec na stôl. Žiadny vymyslený rule file. Živý demo, nie slajdy.
 
 Marian nie je „pomocník“. Bez neho nie je plugin, MCP na laptope, stránka/script naživo ani zoznam pre porotu.
 
+## Parallel stories
+
+Work items: `.docs/stories/README.md`.  
+Read `.docs/stories/S-00-contracts.md` before coding so Marek / Peťo / Marian / Ondrej / Jakub are not blocked on each other.
+
+Locations for the driver sim (not kit, not a DSP rule): `.docs/reference/locations.json`.
+
 ## Čo nerobiť
 
 - Needitovať `dispatch_rules.md`, `vehicles.json`, `jobs.json`, `rules_mcp.py`.

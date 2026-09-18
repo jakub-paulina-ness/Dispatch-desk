@@ -1,0 +1,50 @@
+{
+  "role": "driver-simulation-only",
+  "not_a_dispatch_rule": true,
+  "units": {
+    "distance": "km",
+    "power": "kW"
+  },
+  "garage": {
+    "id": "G-0",
+    "name": "Garage",
+    "km_from_garage": 0,
+    "power_kw": 22
+  },
+  "cities": [
+    {"id": "Cluj", "km_from_garage": 40},
+    {"id": "Oradea", "km_from_garage": 160}
+  ],
+  "charging_stations": [
+    {
+      "id": "CS-1",
+      "name": "Cluj peri-urban DC",
+      "km_from": {"Cluj": 20, "Oradea": 40},
+      "power_kw": 50
+    },
+    {
+      "id": "CS-2",
+      "name": "Oradea highway DC",
+      "km_from": {"Cluj": 60, "Oradea": 20},
+      "power_kw": 150
+    },
+    {
+      "id": "CS-3",
+      "name": "Corridor DC",
+      "km_from": {"Cluj": 100, "Oradea": 47},
+      "power_kw": 50
+    },
+    {
+      "id": "CS-4",
+      "name": "Ultra-fast (out of range)",
+      "km_from": {"Cluj": 300, "Oradea": 200},
+      "power_kw": 350
+    },
+    {
+      "id": "CS-5",
+      "name": "Remote AC",
+      "km_from": {"Cluj": 350, "Oradea": 74},
+      "power_kw": 22
+    }
+  ]
+}
