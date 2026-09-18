@@ -1,0 +1,4 @@
+[mcp_servers.rules]
+command = "python"
+args = ["instructions/rules_mcp.py"]
+enabled = true
