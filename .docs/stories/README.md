@@ -31,7 +31,7 @@ Everyone reads S-00
 | [S-02](S-02-dispatch-engine.md) | `dispatch.py` engine | Ondrej | A graded | ready | plan sign-off (not S-01) |
 | [S-03](S-03-dispatch-tests.md) | T-14 stays refused | Marek | A graded | ready | contract; merge after S-02 |
 | [S-04](S-04-demo-runbook.md) | Must-show runbook | Peťo | A graded | ready | plan sign-off |
-| [S-05](S-05-grok-stack.md) | Skill + hook + plugin + MCP + show_lab | Marian | A graded | ready | S-00 (not S-04) |
+| [S-05](S-05-grok-stack.md) | Skill + hook + plugin + MCP + show_lab | Marian | A graded | **done** | S-00 (not S-04) |
 | [S-10](S-10-html-desk.md) | HTML desk sections | Marek | B wow | ready | S-00 only (mock data OK) |
 | [S-11](S-11-dispatcher-agent.md) | Dispatcher agent | Peťo | B wow | ready | S-00; wire engine when S-02 exists |
 | [S-12](S-12-driver-agent.md) | Electric driver + charge | Marian | B wow | ready | S-00 + S-13; fixture ASSIGN OK |
