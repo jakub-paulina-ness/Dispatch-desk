@@ -566,6 +566,64 @@ function renderEvents() {
   if (rows[0]) $("ticker-text").textContent = `${rows[0].clock} · ${rows[0].text}`;
 }
 
+function renderAgents() {
+  const pack = (state.board && state.board.agents) || {};
+  const llm = pack.llm || {};
+  $("agents-plugin").textContent = pack.model_label || pack.model || "Grok 4.20 fast";
+  $("agents-note").textContent = pack.note || "Live Grok agents on the radio. Engine still runs dispatch_job.";
+  const ticket = pack.dispatcher;
+  const reply = pack.driver;
+  const dispPane = $("dispatcher-pane");
+  const drvPane = $("driver-pane");
+  dispPane.classList.remove("assign", "refuse", "calling");
+  drvPane.classList.remove("accept", "decline", "calling");
+  if (llm.status === "calling") {
+    dispPane.classList.add("calling");
+    drvPane.classList.add("calling");
+  }
+  if (ticket) {
+    const kind = ticket.kind || ticket.decision;
+    dispPane.classList.add(ticket.decision === "Assign" ? "assign" : "refuse");
+    $("dispatcher-line").textContent = `${kind} ${ticket.vehicle_id} · ${ticket.job_id} ${ticket.city}`;
+    $("dispatcher-rule").textContent = ticket.rule || "";
+    $("dispatcher-quoted").textContent = ticket.say || ticket.quoted || "";
+  } else {
+    $("dispatcher-line").textContent = "No ticket for this pair.";
+    $("dispatcher-rule").textContent = "";
+    $("dispatcher-quoted").textContent = "";
+  }
+  if (reply) {
+    drvPane.classList.add(reply.action === "Accept" ? "accept" : "decline");
+    const live = (pack.started || []).find(
+      (row) => row.job_id === reply.job_id && row.vehicle_id === reply.vehicle_id,
+    );
+    const status = reply.status || (live && live.status) || "idle";
+    let line = `${reply.action} ${reply.vehicle_id} · ${status} · ${reply.city}`;
+    if (reply.charger_id) {
+      line += ` · ${reply.charger_id}`;
+      if (reply.charger_power_kw) line += ` ${reply.charger_power_kw} kW`;
+    }
+    $("driver-line").textContent = line;
+    $("driver-rule").textContent = reply.rule || "";
+    $("driver-quoted").textContent = reply.say || reply.quoted || "";
+  } else {
+    $("driver-line").textContent = "Driver waits for a dispatcher ticket.";
+    $("driver-rule").textContent = "";
+    $("driver-quoted").textContent = "";
+  }
+  const list = $("agent-events");
+  list.innerHTML = "";
+  const selected = ticket || {};
+  for (const row of pack.events || []) {
+    const li = document.createElement("li");
+    const kind = String(row.kind || "").toLowerCase();
+    li.className = kind;
+    if (row.job_id === selected.job_id && row.vehicle_id === selected.vehicle_id) li.classList.add("on");
+    li.textContent = `${row.job_id} ${row.vehicle_id} ${row.kind}`;
+    list.appendChild(li);
+  }
+}
+
 function renderAsk() {
   const box = $("ask-result");
   if (!state.ask) {
@@ -610,6 +668,7 @@ function render() {
   renderMap();
   renderLog();
   renderEvents();
+  renderAgents();
   renderAsk();
   renderSim();
 }

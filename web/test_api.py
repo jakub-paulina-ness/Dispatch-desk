@@ -79,6 +79,65 @@ class WebUsesDesk(unittest.TestCase):
         self.assertEqual(board["who_clicks"], board["dispatcher"])
         self.assertEqual(board["dispatcher"], "A. Pop")
 
+    def test_agents_on_board_assign_t11(self) -> None:
+        pack = server.board_payload("J-01")["agents"]
+        self.assertEqual(pack["plugin"], "dispatch-desk")
+        self.assertEqual(len(pack["events"]), 6)
+        self.assertEqual(
+            [(row["job_id"], row["vehicle_id"], row["kind"]) for row in pack["events"]],
+            [
+                ("J-01", "T-11", "ASSIGN"),
+                ("J-01", "T-12", "SKIP"),
+                ("J-01", "T-14", "REFUSE"),
+                ("J-02", "T-11", "ASSIGN"),
+                ("J-02", "T-12", "SKIP"),
+                ("J-02", "T-14", "REFUSE"),
+            ],
+        )
+        ticket = pack["dispatcher"]
+        self.assertEqual(ticket["kind"], "ASSIGN")
+        self.assertEqual(ticket["vehicle_id"], "T-11")
+        self.assertEqual(ticket["decision"], "Assign")
+        self.assertIn("DSP-1", ticket["dsp_ids"])
+        self.assertEqual(pack["driver"]["action"], "Accept")
+        self.assertEqual(pack["driver"]["status"], "en_route")
+        self.assertEqual(pack["driver"]["city"], "Cluj")
+
+    def test_agent_refuses_t14_driver_declines(self) -> None:
+        pack = server.board_payload("J-01", "T-14")["agents"]
+        self.assertEqual(pack["dispatcher"]["kind"], "REFUSE")
+        self.assertEqual(pack["dispatcher"]["rule"], "DSP-3")
+        self.assertEqual(pack["driver"]["action"], "Decline")
+        self.assertEqual(pack["driver"]["status"], "idle")
+        self.assertEqual(pack["driver"]["city"], "-")
+
+    def test_agent_skips_t12_driver_declines(self) -> None:
+        pack = server.board_payload("J-01", "T-12")["agents"]
+        self.assertEqual(pack["dispatcher"]["kind"], "SKIP")
+        self.assertEqual(pack["driver"]["action"], "Decline")
+
+    def test_confirm_starts_driver_agent(self) -> None:
+        sent = server.confirm("J-01", "T-11")
+        self.assertTrue(sent["ok"])
+        started = sent["board"]["agents"]["started"]
+        self.assertEqual(started[0]["action"], "Accept")
+        self.assertEqual(started[0]["job_id"], "J-01")
+        self.assertEqual(started[0]["vehicle_id"], "T-11")
+        refused = server.confirm("J-01", "T-14")
+        self.assertFalse(refused["ok"])
+        self.assertEqual(len(server.STATE["started"]), 1)
+        undone = server.undo()
+        self.assertTrue(undone["ok"])
+        self.assertEqual(undone["board"]["agents"]["started"], [])
+
+    def test_plugin_packs_agents(self) -> None:
+        plugin = ROOT / ".grok" / "plugins" / "dispatch-desk"
+        self.assertTrue((plugin / "agents" / "dispatcher.md").is_file())
+        self.assertTrue((plugin / "agents" / "driver.md").is_file())
+        text = (plugin / "agents" / "dispatcher.md").read_text(encoding="utf-8")
+        self.assertNotIn("python3 -c", text)
+        self.assertIn("python -c", text)
+
     def test_idle_range_holds(self) -> None:
         start = sim.vehicle("T-11")["range_km"]
         sim.advance(600)

@@ -20,17 +20,19 @@ if str(WEB) not in sys.path:
 
 import desk  # noqa: E402
 import sim  # noqa: E402
+import agents  # noqa: E402
 
 DISPLAY_FILE = WEB / "display.json"
 LOG_FILE = ROOT / "dispatch.log"
 LOCATIONS_FILE = ROOT / ".docs" / "reference" / "locations.json"
 
-STATE: dict = {"log": []}
+STATE: dict = {"log": [], "started": []}
 
 
 def reset(speed: float | None = None) -> None:
     sim.reset(speed)
     STATE["log"] = []
+    STATE["started"] = []
 
 
 def load_display() -> dict:
@@ -183,6 +185,7 @@ def board_payload(job_id: str | None = None, vehicle_id: str | None = None) -> d
         "sim": sim.sim_payload(),
         "map": sim.map_payload(selected_vehicle),
         "locations": locations_payload(),
+        "agents": agents.payload(selected_job, selected_vehicle, STATE["started"]),
         "can_send": can_send,
         "can_undo": sim.can_undo(),
         "who_clicks": display.get("dispatcher"),
@@ -224,6 +227,15 @@ def confirm(job_id: str, vehicle_id: str) -> dict:
     started = sim.assign_job(vehicle_id, job)
     if not started.get("ok"):
         return {"ok": False, "error": started.get("error") or "Not sent.", "board": board_payload(job_id, vehicle_id)}
+    event = agents.find_event(job_id, vehicle_id)
+    if event and event.get("kind") == "ASSIGN":
+        reply = agents.driver_reply(
+            agents.dispatcher_ticket(event),
+            live=sim.public_vehicle(vehicle_id),
+            job_state="assigned",
+        )
+        if reply:
+            STATE["started"].insert(0, reply)
     entry = _log("Assign", job_id, vehicle_id, result["rule"], result["quote"])
     return {"ok": True, "sent": entry, "board": board_payload(job_id, vehicle_id)}
 
@@ -234,6 +246,11 @@ def undo() -> dict:
         if row.get("decision") in {"Assign", "Service", "Charge", "Return"}:
             last = STATE["log"].pop(index)
             break
+    if last and last.get("decision") == "Assign":
+        for index, row in enumerate(STATE["started"]):
+            if row.get("job_id") == last.get("job_id") and row.get("vehicle_id") == last.get("vehicle_id"):
+                STATE["started"].pop(index)
+                break
     snap = sim.undo()
     if snap is None and last is None:
         return {"ok": False, "error": "Nothing to undo.", "board": board_payload()}
@@ -389,6 +406,16 @@ class DeskHandler(BaseHTTPRequestHandler):
             return
         if path == "/api/locations":
             self._json(200, locations_payload())
+            return
+        if path == "/api/dispatch":
+            self._json(
+                200,
+                {
+                    "events": agents.events(),
+                    "started": list(STATE["started"]),
+                    "plugin": agents.PLUGIN,
+                },
+            )
             return
         if path == "/":
             path = "/index.html"
