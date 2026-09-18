@@ -3,8 +3,15 @@
 from __future__ import annotations
 
 import copy
+import json
 import math
+from pathlib import Path
 from typing import Any
+
+ROOT = Path(__file__).resolve().parent.parent
+LOCATIONS_PATH = ROOT / ".docs" / "reference" / "locations.json"
+CORRIDOR_KM = 160.0
+KWH_PER_KM = 0.5
 
 VIEW = (1000, 520)
 YARD = (792.0, 292.0)
@@ -12,11 +19,11 @@ CLUJ = (760.0, 210.0)
 CLUJ_DROP = (838.0, 148.0)
 ORADEA = (92.0, 208.0)
 ORADEA_DROP = (64.0, 168.0)
-SC_CLUJ = (824.0, 328.0)
-SC_MID = (456.0, 248.0)
-SC_ORADEA = (118.0, 252.0)
 T14_POS = (318.0, 172.0)
 T12_POS = (708.0, 168.0)
+LOCATIONS: dict[str, Any] = {}
+CHARGERS: list[dict] = []
+CITIES: list[dict] = []
 
 CORRIDOR = [
     (64.0, 168.0),
@@ -42,18 +49,6 @@ CLUJ_LOOP = [
     (708.0, 168.0),
     (740.0, 210.0),
     (792.0, 292.0),
-]
-
-CHARGERS = [
-    {"id": "sc-cluj", "name": "Cluj Yard Supercharger", "x": SC_CLUJ[0], "y": SC_CLUJ[1], "place": "Cluj"},
-    {"id": "sc-mid", "name": "Corridor Supercharger", "x": SC_MID[0], "y": SC_MID[1], "place": "Midway"},
-    {"id": "sc-oradea", "name": "Oradea Supercharger", "x": SC_ORADEA[0], "y": SC_ORADEA[1], "place": "Oradea"},
-]
-
-CITIES = [
-    {"id": "oradea", "name": "Oradea", "x": ORADEA[0], "y": ORADEA[1], "sub": "J-02 · 160 km"},
-    {"id": "cluj", "name": "Cluj", "x": CLUJ[0], "y": CLUJ[1], "sub": "J-01 · 40 km"},
-    {"id": "yard", "name": "Yard", "x": YARD[0], "y": YARD[1], "sub": "Northbound"},
 ]
 
 LAND = [[(0, 90), (220, 50), (520, 36), (820, 58), (1000, 80), (1000, 520), (0, 520)]]
@@ -106,6 +101,112 @@ def point_along(points: list[tuple[float, float]], t: float) -> tuple[float, flo
     return points[-1]
 
 
+def point_at_km(km: float) -> tuple[float, float]:
+    # Corridor is drawn Oradea (160 km) → garage (0 km). No lat/lon.
+    t = 1.0 - (max(0.0, min(CORRIDOR_KM, float(km))) / CORRIDOR_KM)
+    return point_along(CORRIDOR, t)
+
+
+def charge_kmh(power_kw: float | None) -> float:
+    if not power_kw:
+        return CHARGE_KMH
+    return float(power_kw) / KWH_PER_KM
+
+
+def load_locations(path: Path | None = None) -> dict:
+    return json.loads((path or LOCATIONS_PATH).read_text(encoding="utf-8"))
+
+
+def _station_km(station: dict, city_km: dict) -> float:
+    cluj_d = float(station["km_from"]["Cluj"])
+    oradea_d = float(station["km_from"]["Oradea"])
+    if cluj_d <= oradea_d:
+        km = city_km["Cluj"] + cluj_d
+        if km > city_km["Oradea"]:
+            km = city_km["Cluj"] - cluj_d
+        return km
+    return city_km["Oradea"] - oradea_d
+
+
+def apply_locations(path: Path | None = None) -> dict:
+    """Pin cities/chargers from locations.json onto the corridor. Sim-only."""
+    global LOCATIONS, CHARGERS, CITIES, YARD, CLUJ, ORADEA, CLUJ_DROP, ORADEA_DROP, DEST, RETURN_KM
+    loc = load_locations(path)
+    LOCATIONS = loc
+    city_km = {row["id"]: float(row["km_from_garage"]) for row in loc["cities"]}
+    garage = loc["garage"]
+    YARD = point_at_km(float(garage.get("km_from_garage") or 0))
+    CLUJ = point_at_km(city_km["Cluj"])
+    ORADEA = point_at_km(city_km["Oradea"])
+    CLUJ_DROP = (CLUJ[0] + 78.0, CLUJ[1] - 62.0)
+    ORADEA_DROP = (ORADEA[0] - 28.0, ORADEA[1] - 40.0)
+    DEST = {"Cluj": CLUJ_DROP, "Oradea": ORADEA_DROP}
+    RETURN_KM = {"Cluj": 8.0, "Oradea": city_km["Oradea"]}
+    CITIES = [
+        {
+            "id": "oradea",
+            "name": "Oradea",
+            "x": ORADEA[0],
+            "y": ORADEA[1],
+            "sub": f"J-02 · {int(city_km['Oradea'])} km",
+            "km_from_garage": city_km["Oradea"],
+        },
+        {
+            "id": "cluj",
+            "name": "Cluj",
+            "x": CLUJ[0],
+            "y": CLUJ[1],
+            "sub": f"J-01 · {int(city_km['Cluj'])} km",
+            "km_from_garage": city_km["Cluj"],
+        },
+        {
+            "id": "yard",
+            "name": garage.get("name") or "Garage",
+            "x": YARD[0],
+            "y": YARD[1],
+            "sub": f"{garage.get('id', 'G-0')} · {int(garage.get('power_kw') or 22)} kW",
+            "km_from_garage": float(garage.get("km_from_garage") or 0),
+        },
+    ]
+    chargers = [
+        {
+            "id": str(garage["id"]),
+            "name": str(garage.get("name") or "Garage"),
+            "x": YARD[0] + 32.0,
+            "y": YARD[1] + 36.0,
+            "place": "Garage",
+            "power_kw": int(garage.get("power_kw") or 22),
+            "km_from_garage": float(garage.get("km_from_garage") or 0),
+            "reachable": True,
+        }
+    ]
+    for station in loc.get("charging_stations") or []:
+        km = _station_km(station, city_km)
+        nearest = min(float(v) for v in station["km_from"].values())
+        reachable = nearest <= CORRIDOR_KM
+        if reachable and 0 <= km <= CORRIDOR_KM:
+            x, y = point_at_km(km)
+        else:
+            x, y = 36.0, 64.0
+            reachable = False
+        nearer = "Cluj" if station["km_from"]["Cluj"] <= station["km_from"]["Oradea"] else "Oradea"
+        chargers.append(
+            {
+                "id": str(station["id"]),
+                "name": str(station["name"]),
+                "x": x,
+                "y": y,
+                "place": nearer,
+                "power_kw": int(station.get("power_kw") or 0),
+                "km_from": dict(station["km_from"]),
+                "km_from_garage": km,
+                "reachable": reachable,
+            }
+        )
+    CHARGERS = chargers
+    return loc
+
+
 def nearest_index(points: list[tuple[float, float]], p: tuple[float, float]) -> int:
     return min(range(len(points)), key=lambda i: _hypot(points[i], p))
 
@@ -140,9 +241,23 @@ def charger_by_id(charger_id: str | None) -> dict | None:
     return None
 
 
+def charger_km(v: dict, row: dict, path: list[tuple[float, float]]) -> float:
+    pixel = max(0.4, km_of_path(path))
+    km_from = row.get("km_from") or {}
+    here = place_name(v["x"], v["y"]).lower()
+    for city, dist in km_from.items():
+        if city.lower() in here:
+            return max(0.4, float(dist))
+    if ("yard" in here or "garage" in here) and row.get("km_from_garage") is not None:
+        return max(0.4, abs(float(row["km_from_garage"])))
+    return pixel
+
+
 def nearest_charger(x: float, y: float) -> dict:
     here = (x, y)
-    return min(CHARGERS, key=lambda row: _hypot(here, (row["x"], row["y"])))
+    reachable = [row for row in CHARGERS if row.get("reachable", True)]
+    pool = reachable or CHARGERS
+    return min(pool, key=lambda row: _hypot(here, (row["x"], row["y"])))
 
 
 def place_name(x: float, y: float) -> str:
@@ -153,11 +268,10 @@ def place_name(x: float, y: float) -> str:
         (CLUJ, "Cluj"),
         (ORADEA_DROP, "Oradea drop-off"),
         (ORADEA, "Oradea"),
-        (SC_CLUJ, "Cluj Yard Supercharger"),
-        (SC_MID, "Corridor Supercharger"),
-        (SC_ORADEA, "Oradea Supercharger"),
         (T14_POS, "Corridor west"),
     ]
+    for row in CHARGERS:
+        spots.append(((row["x"], row["y"]), row["name"]))
     spot, name = min(spots, key=lambda item: _hypot(here, item[0]))
     if _hypot(here, spot) < 36:
         return name
@@ -184,13 +298,28 @@ def heading_of(prev: tuple[float, float], cur: tuple[float, float], fallback: fl
 
 S: dict[str, Any] = {}
 
+SPEEDS = (0, 0.5, 1, 4, 16)
+DEFAULT_SPEED = 1.0
 
-def reset() -> None:
+
+def as_speed(value: Any, fallback: float = DEFAULT_SPEED) -> float:
+    try:
+        speed = float(value)
+    except (TypeError, ValueError):
+        return fallback
+    for allowed in SPEEDS:
+        if abs(speed - allowed) < 1e-9:
+            return float(allowed)
+    return fallback
+
+
+def reset(speed: float | None = None) -> None:
+    keep = as_speed(speed, as_speed(S.get("speed"), DEFAULT_SPEED)) if speed is not None else as_speed(S.get("speed"), DEFAULT_SPEED)
     S.clear()
     S.update(
         {
             "sim_s": 0.0,
-            "speed": 4,
+            "speed": keep,
             "last_wall": None,
             "vehicles": {
                 "T-11": _unit("T-11", YARD, 180.0, oos=False, hours=True, activity="idle"),
@@ -370,7 +499,8 @@ def eta_free_s(v: dict) -> float:
             t += max(0.0, task["s"] - task.get("done_s", 0.0))
         elif kind == "charge":
             need = max(0.0, v["range_full"] - range_now)
-            t += need / (CHARGE_KMH / 3600.0)
+            rate = charge_kmh(task.get("power_kw"))
+            t += need / (rate / 3600.0) if rate else 0.0
             range_now = v["range_full"]
     return t
 
@@ -439,15 +569,17 @@ def _drive_step(holder: dict, task: dict, dt: float, speed_kmh: float, drain: bo
     step = min(left, (speed_kmh / 3600.0) * dt)
     if drain:
         vrange = holder.get("range_km", 0.0)
-        if vrange <= 0.05:
+        going_to_charge = any(item.get("kind") == "charge" for item in holder.get("queue") or [])
+        if vrange <= 0.05 and not going_to_charge:
             holder["oos"] = True
             holder["activity"] = "stranded"
             holder["queue"] = []
             emit(f"{holder.get('id', 'Unit')} range depleted. Out of service.", "refuse")
             add_sked(holder["id"], "Range depleted · out of service", "red")
             return
-        step = min(step, vrange)
-        holder["range_km"] = max(0.0, vrange - step)
+        if not going_to_charge:
+            step = min(step, vrange)
+        holder["range_km"] = max(0.0, vrange - min(step, vrange))
     if step <= 0:
         return
     task["done"] += step
@@ -490,7 +622,8 @@ def _tick_vehicle(v: dict, dt: float) -> None:
                 add_sked(v["id"], "Returned to service", "idle")
     elif kind == "charge":
         v["activity"] = "charging"
-        v["range_km"] = min(v["range_full"], v["range_km"] + (CHARGE_KMH / 3600.0) * dt)
+        rate = charge_kmh(task.get("power_kw"))
+        v["range_km"] = min(v["range_full"], v["range_km"] + (rate / 3600.0) * dt)
         if v["range_km"] >= v["range_full"] - 0.05:
             v["range_km"] = v["range_full"]
             v["queue"].pop(0)
@@ -544,7 +677,7 @@ def advance(dt: float) -> None:
     # Step in slices so fast-forward still hits arrivals.
     left = dt
     while left > 0:
-        slice_s = min(10.0, left)
+        slice_s = min(0.5, left)
         for v in S["vehicles"].values():
             _tick_vehicle(v, slice_s)
         _tick_van(slice_s)
@@ -557,19 +690,17 @@ def sync_wall(now: float) -> None:
     S["last_wall"] = now
     if last is None:
         return
-    speed = int(S.get("speed") or 0)
+    speed = as_speed(S.get("speed"), 0)
     if speed <= 0:
         return
     wall = max(0.0, now - last)
-    wall = min(wall, 1.0)
+    wall = min(wall, 0.25)
     dt = wall * speed * SIM_PER_WALL_1X
     advance(dt)
 
 
-def set_speed(speed: int) -> None:
-    if speed not in (0, 1, 4, 16):
-        speed = 4
-    S["speed"] = speed
+def set_speed(speed: float) -> None:
+    S["speed"] = as_speed(speed, DEFAULT_SPEED)
     S["last_wall"] = None
 
 
@@ -613,9 +744,10 @@ def warnings_for(job: dict | None, vid: str | None) -> list[str]:
     ret = return_km_for(str(job.get("city") or ""))
     remain = v["range_km"] - need
     if remain < ret:
+        charger = nearest_charger(DEST.get(str(job.get("city") or ""), YARD)[0], DEST.get(str(job.get("city") or ""), YARD)[1])
         notes.append(
             f"{vid} would arrive with ~{max(0, int(remain))} km. "
-            f"Return to yard needs {int(ret)} km. Plan a Supercharger."
+            f"Return to yard needs {int(ret)} km. Plan {charger['id']} ({charger['power_kw']} kW)."
         )
     return notes
 
@@ -746,15 +878,21 @@ def send_charge(vid: str, charger_id: str | None) -> dict:
     row = charger_by_id(charger_id) if charger_id else None
     if row is None:
         row = nearest_charger(v["x"], v["y"])
+    if not row.get("reachable", True):
+        return {"ok": False, "error": f"{row['id']} is out of range in locations.json."}
     dest = (row["x"], row["y"])
     path = via(CORRIDOR, (v["x"], v["y"]), dest)
-    km = max(0.4, km_of_path(path))
+    km = charger_km(v, row, path)
     if v["range_km"] + 0.5 < km:
         return {"ok": False, "error": "Range is less than the run to that charger."}
     push_undo()
     v["queue"] = [
         {"kind": "drive", "path": path, "km": km, "done": 0.0, "label": f"To {row['name']}"},
-        {"kind": "charge", "label": f"Charging · {row['name']}"},
+        {
+            "kind": "charge",
+            "label": f"Charging · {row['name']} {row.get('power_kw', 0)} kW",
+            "power_kw": row.get("power_kw"),
+        },
     ]
     v["activity"] = "en_route"
     add_sked(vid, f"Sent to {row['name']}", "charge")
@@ -801,7 +939,9 @@ def public_vehicle(vid: str) -> dict | None:
         return None
     eta = eta_free_s(v)
     task = v["queue"][0] if v["queue"] else None
-    path = task["path"] if task and task.get("path") else []
+    driving = bool(task and task.get("kind") == "drive" and task.get("path"))
+    path = list(task["path"]) if driving else []
+    moving = v["activity"] not in {"idle", "dwelling", "charging", "servicing", "stranded"}
     return {
         "id": vid,
         "status": dsp_status(v),
@@ -824,7 +964,9 @@ def public_vehicle(vid: str) -> dict | None:
         "oos": v["oos"],
         "session": "sent" if any(item["kind"] == "job" for item in v["schedule"]) else "roster",
         "ops": ops(vid),
-        "speed_kmh": 0.0 if v["activity"] in {"idle", "dwelling", "charging", "servicing", "stranded"} else CRUISE_KMH,
+        "speed_kmh": 0.0 if not moving or not driving else CRUISE_KMH,
+        "path_km": float(task["km"]) if driving else 0.0,
+        "path_done": float(task.get("done") or 0.0) if driving else 0.0,
     }
 
 
@@ -833,6 +975,8 @@ def map_payload(selected_vehicle: str | None = None) -> dict:
     van_row = S["van"]
     van_pub = None
     if van_row["active"]:
+        task = van_row["queue"][0] if van_row["queue"] else None
+        driving = bool(task and task.get("kind") == "drive" and task.get("path"))
         van_pub = {
             "id": "crew",
             "x": van_row["x"],
@@ -841,6 +985,10 @@ def map_payload(selected_vehicle: str | None = None) -> dict:
             "target": van_row.get("target"),
             "trail": van_row.get("trail") or [],
             "label": "Yard crew",
+            "path": list(task["path"]) if driving else [],
+            "path_km": float(task["km"]) if driving else 0.0,
+            "path_done": float(task.get("done") or 0.0) if driving else 0.0,
+            "speed_kmh": VAN_KMH if driving else 0.0,
         }
     selected = public_vehicle(selected_vehicle) if selected_vehicle else None
     return {
@@ -856,6 +1004,7 @@ def map_payload(selected_vehicle: str | None = None) -> dict:
         "px_per_km": PX_PER_KM,
         "selected_path": selected["path"] if selected else [],
         "selected_id": selected_vehicle,
+        "locations_source": str(LOCATIONS_PATH.relative_to(ROOT)).replace("\\", "/"),
     }
 
 
@@ -865,10 +1014,12 @@ def sim_payload() -> dict:
         "clock": clock_str(S["sim_s"]),
         "sim_s": S["sim_s"],
         "speed": S["speed"],
+        "sim_per_wall_1x": SIM_PER_WALL_1X,
         "shift_left_min": int(left / 60),
         "hours_ok_shift": shift_ok(),
         "night": (SHIFT_START_S + S["sim_s"]) % 86400 >= 20 * 3600 or (SHIFT_START_S + S["sim_s"]) % 86400 < 6 * 3600,
     }
 
 
+apply_locations()
 reset()

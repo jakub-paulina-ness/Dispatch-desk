@@ -22,8 +22,9 @@
     </div>
     <div class="speeds" role="group" aria-label="Simulation speed">
       <button type="button" class="speed" data-speed="0">Pause</button>
-      <button type="button" class="speed" data-speed="1">1×</button>
-      <button type="button" class="speed on" data-speed="4">4×</button>
+      <button type="button" class="speed" data-speed="0.5">0.5×</button>
+      <button type="button" class="speed on" data-speed="1">1×</button>
+      <button type="button" class="speed" data-speed="4">4×</button>
       <button type="button" class="speed" data-speed="16">16×</button>
       <button type="button" class="speed reset" id="reset-yard">Reset yard</button>
     </div>
@@ -65,13 +66,13 @@
         <div class="map-head">
           <div>
             <p class="kicker">Live map · Cluj — Oradea</p>
-            <p class="map-sub">Kit cities only. Superchargers are yard infrastructure, not roster vehicles.</p>
+            <p class="map-sub">Cities and chargers from <code>.docs/reference/locations.json</code>. Not a dispatch rule.</p>
           </div>
           <ul class="legend">
             <li><i class="dot free"></i> Free</li>
             <li><i class="dot busy"></i> Busy</li>
             <li><i class="dot red"></i> Out of service</li>
-            <li><i class="bolt"></i> Supercharger</li>
+            <li><i class="bolt"></i> Charger</li>
             <li><i class="dot crew"></i> Yard crew</li>
           </ul>
         </div>
