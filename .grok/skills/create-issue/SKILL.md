@@ -78,8 +78,8 @@ What happens now. Include command output or a file excerpt when you have it.
 - Commands to run after the fix (`python -m unittest ...`)
 ```
 
-`status` on create is always `open`. Later fixer skills may set `in_progress`
-or `done`; this skill does not.
+`status` on create is always `open`. `/fix-issue` sets `in_progress` while
+working, then `done` when Acceptance is met. This skill does not.
 
 Default `priority` to `medium` when the user does not say. Pick `type` from
 the request: broken behavior is `bug`, new behavior is `feature`, otherwise
