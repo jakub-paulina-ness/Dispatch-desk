@@ -4,7 +4,7 @@
 |---|---|
 | **Owner** | Marek |
 | **Layer** | A — graded (must-show 8) |
-| **Status** | ready |
+| **Status** | done |
 | **Blocked on** | [S-00](S-00-contracts.md) to **write** tests. **Merge** after S-02. |
 | **Unblocks** | Live demo unittest; confidence for Layer B |
 
@@ -22,16 +22,16 @@ Import engine with `sys.path.insert(src)` then `import dispatch` (same as root s
 
 ## Acceptance (from architecture test strategy)
 
-- [ ] T-J01-T11 / T-J02-T11 — both jobs ASSIGN T-11
-- [ ] T-14-J01 / T-14-J02 — never ASSIGN T-14; has REFUSE T-14
-- [ ] T-12-NEVER — never ASSIGN T-12
-- [ ] T-QUOTE-SUBSET / T-QUOTE-HANDLE / T-QUOTE-DSP3 / T-QUOTE-ASSIGN
-- [ ] T-QUOTE-SRC — engine source has no DSP sentence bodies
-- [ ] T-LOAD-PATH — kit is `instructions/`, not `.docs/reference/`
-- [ ] T-NO-INVENT / T-ORDER / T-INDEPENDENT
-- [ ] T-CLI-ALL / T-CLI-ONE / T-CLI-HELP / T-CLI-BAD
-- [ ] Command: `python -m unittest test_dispatch -v`
-- [ ] Tests do **not** load `locations.json` or assert charging
+- [x] T-J01-T11 / T-J02-T11 — both jobs ASSIGN T-11
+- [x] T-14-J01 / T-14-J02 — never ASSIGN T-14; has REFUSE T-14
+- [x] T-12-NEVER — never ASSIGN T-12
+- [x] T-QUOTE-SUBSET / T-QUOTE-HANDLE / T-QUOTE-DSP3 / T-QUOTE-ASSIGN
+- [x] T-QUOTE-SRC — engine source has no DSP sentence bodies
+- [x] T-LOAD-PATH — kit is `instructions/`, not `.docs/reference/`
+- [x] T-NO-INVENT / T-ORDER / T-INDEPENDENT
+- [x] T-CLI-ALL / T-CLI-ONE / T-CLI-HELP / T-CLI-BAD
+- [x] Command: `python -m unittest test_dispatch -v`
+- [x] Tests do **not** load `locations.json` or assert charging
 
 ## Parallel with S-10
 

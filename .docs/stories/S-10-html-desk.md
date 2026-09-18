@@ -4,7 +4,7 @@
 |---|---|
 | **Owner** | Marek |
 | **Layer** | B — wow |
-| **Status** | ready |
+| **Status** | done |
 | **Blocked on** | [S-00](S-00-contracts.md) only. Use fixtures until S-11/S-14. |
 | **Unblocks** | S-14 can serve this page |
 
@@ -36,11 +36,11 @@ Do **not** copy workshop HTML/CSS/JS.
 
 ## Acceptance
 
-- [ ] Six sections visible without a backend.
-- [ ] Decision board can render the six fixture events (2 jobs × 3 trucks).
-- [ ] T-14 styled as REFUSE, not ASSIGN.
-- [ ] Charger list shows power in kW.
-- [ ] No workshop assets. No invented T-15.
+- [x] Six sections visible without a backend.
+- [x] Decision board can render the six fixture events (2 jobs × 3 trucks).
+- [x] T-14 styled as REFUSE, not ASSIGN.
+- [x] Charger list shows power in kW.
+- [x] No workshop assets. No invented T-15.
 
 ## Parallel
 
