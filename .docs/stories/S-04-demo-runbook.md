@@ -4,7 +4,7 @@
 |---|---|
 | **Owner** | Peťo |
 | **Layer** | A — graded |
-| **Status** | ready |
+| **Status** | done |
 | **Blocked on** | Architecture / [S-00](S-00-contracts.md). Hook **implementation** is Jakub (S-05); you spec it (already in architecture). |
 | **Unblocks** | Dry-run clock; live demo speaking order |
 
