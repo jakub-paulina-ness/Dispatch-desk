@@ -27,7 +27,7 @@ Everyone reads S-00
 | ID | Story | Owner | Layer | Status | Blocked on |
 |---|---|---|---|---|---|
 | [S-00](S-00-contracts.md) | Shared contracts | all | — | **ready** | — |
-| [S-01](S-01-agents-md.md) | `AGENTS.md` | Jakub | A graded | ready | plan sign-off |
+| [S-01](S-01-agents-md.md) | `AGENTS.md` | Jakub | A graded | **done** | plan sign-off |
 | [S-02](S-02-dispatch-engine.md) | `dispatch.py` engine | Peťo | A graded | ready | plan sign-off (not S-01) |
 | [S-03](S-03-dispatch-tests.md) | T-14 stays refused | Marek | A graded | ready | contract; merge after S-02 |
 | [S-04](S-04-demo-runbook.md) | Must-show runbook | Peťo | A graded | ready | plan sign-off |
