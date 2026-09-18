@@ -4,7 +4,7 @@
 |---|---|
 | **Owner** | Marian |
 | **Layer** | B — wow |
-| **Status** | ready |
+| **Status** | done |
 | **Blocked on** | [S-00](S-00-contracts.md) + [S-13](S-13-locations-data.md) (done). Fixture ASSIGN is enough; do not wait for S-11 process spawn. |
 | **Unblocks** | S-10 telemetry panel; live “CS-2 150 kW” moment |
 
