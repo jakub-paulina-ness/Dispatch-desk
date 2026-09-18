@@ -2,3 +2,6 @@
 command = "python"
 args = ["instructions/rules_mcp.py"]
 enabled = true
+
+[plugins]
+enabled = ["dispatch-desk"]

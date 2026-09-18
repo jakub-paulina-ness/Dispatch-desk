@@ -23,6 +23,7 @@ Before writing files, list and read the four kit files under `instructions/`:
 6. Do not mutate roster after J-01. Both jobs ASSIGN T-11. T-12 is always SKIP (busy).
 7. Interpreter is `python`, never `python3` (Store stub on this laptop).
 8. Do not copy workshop HTML/CSS/JS.
+9. A recommendation is not a send. The dispatcher must confirm. Undo last send if the click was wrong. Do not give medical, legal, or payment advice.
 
 ## Commands
 
@@ -31,9 +32,14 @@ python dispatch.py
 python dispatch.py J-01
 python -m unittest test_dispatch -v
 python pipelines/show_lab.py
+python test_desk.py
+python web/test_api.py
+python web/server.py
 ```
 
 Engine: `src/dispatch.py` (root `dispatch.py` is a shim). Kit path: `instructions/`, not `.docs/reference/`.
+
+Live yard (Layer B): `desk.py` + `web/` on http://127.0.0.1:8770/ — session overlay only; kit files are never rewritten. Charging, yard service, and map motion are telemetry after ASSIGN, not new DSP rules.
 
 MCP: project `rules` in `.grok/config.toml`. If `grok mcp doctor rules` is green, do not re-add — show `grok mcp list`.
 

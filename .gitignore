@@ -1,8 +1,21 @@
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.dispatch.log
+dispatch.log
+_lab3/
+.venv/
+venv/
+.env
 .DS_Store
+Thumbs.db
+*.egg-info/
+.idea/
+.vscode/
 
 # Local-only workshop screenshots
 .docs/reference/04-kit-subory.png
 .docs/reference/05-ako-rozhoduje.png
 .docs/reference/co-treba-robit.png
 .docs/reference/zadanie.png
-

@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python ${GROK_PLUGIN_ROOT}/hooks/desk_guard.py",
+            "command": "python desk_guard.py",
             "timeout": 10
           }
         ]
@@ -13,12 +13,12 @@
     ],
     "PreToolUse": [
       {
-        "matcher": "write|Write|Edit|search_replace|Bash|run_terminal_command",
+        "matcher": "Write|Edit|MultiEdit|search_replace",
         "hooks": [
           {
             "type": "command",
-            "command": "python \"${GROK_PLUGIN_ROOT}/hooks/protect_rules.py\"",
-            "timeout": 5
+            "command": "python desk_guard.py",
+            "timeout": 10
           }
         ]
       }

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Northbound · Dispatch desk</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <span class="mark" id="mark">NB</span>
+      <div>
+        <p class="org" id="org">Northbound</p>
+        <p class="desk-title" id="desk">Dispatch desk · live yard</p>
+      </div>
+    </div>
+    <div class="clock-block">
+      <p class="kicker tight">Sim clock</p>
+      <p class="clock" id="sim-clock">06:00:00</p>
+      <p class="shift-left">Shift left <span id="shift-left">600</span> min</p>
+    </div>
+    <div class="speeds" role="group" aria-label="Simulation speed">
+      <button type="button" class="speed" data-speed="0">Pause</button>
+      <button type="button" class="speed" data-speed="1">1×</button>
+      <button type="button" class="speed on" data-speed="4">4×</button>
+      <button type="button" class="speed" data-speed="16">16×</button>
+      <button type="button" class="speed reset" id="reset-yard">Reset yard</button>
+    </div>
+    <div class="top-meta">
+      <span>Yard <span id="yard">Cluj</span></span>
+      <span>Shift <span id="shift">Day</span></span>
+      <span>Dispatcher <span id="dispatcher">A. Pop</span></span>
+      <span class="live-tag">Confirm required</span>
+    </div>
+  </header>
+
+  <div class="ticker" aria-live="polite">
+    <span class="ticker-kicker">Live</span>
+    <p id="ticker-text">Shift open.</p>
+  </div>
+
+  <div class="shell">
+    <aside class="queue">
+      <div class="queue-head">
+        <div>
+          <p class="kicker">Queue</p>
+          <p class="queue-title">Jobs</p>
+        </div>
+        <p class="count"><span id="job-count">2</span> open</p>
+      </div>
+      <ul id="job-list"></ul>
+      <div class="queue-head roster-head">
+        <div>
+          <p class="kicker">Roster</p>
+          <p class="queue-title">Vehicles</p>
+        </div>
+        <p class="count"><span id="vehicle-count">3</span></p>
+      </div>
+      <ul id="vehicle-list"></ul>
+    </aside>
+
+    <section class="map-col">
+      <div class="card map-card">
+        <div class="map-head">
+          <div>
+            <p class="kicker">Live map · Cluj — Oradea</p>
+            <p class="map-sub">Kit cities only. Superchargers are yard infrastructure, not roster vehicles.</p>
+          </div>
+          <ul class="legend">
+            <li><i class="dot free"></i> Free</li>
+            <li><i class="dot busy"></i> Busy</li>
+            <li><i class="dot red"></i> Out of service</li>
+            <li><i class="bolt"></i> Supercharger</li>
+            <li><i class="dot crew"></i> Yard crew</li>
+          </ul>
+        </div>
+        <svg class="map" id="map" viewBox="0 0 1000 520" role="img" aria-label="Live yard map">
+          <defs>
+            <linearGradient id="land-fill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#163028"/>
+              <stop offset="1" stop-color="#0f1a1c"/>
+            </linearGradient>
+            <linearGradient id="road-glow" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="#c9a46a"/>
+              <stop offset="0.5" stop-color="#f0d9a0"/>
+              <stop offset="1" stop-color="#c9a46a"/>
+            </linearGradient>
+            <filter id="soft">
+              <feGaussianBlur stdDeviation="2.2"/>
+            </filter>
+          </defs>
+          <g id="map-land"></g>
+          <g id="map-river"></g>
+          <g id="map-grid"></g>
+          <g id="map-road"></g>
+          <g id="map-range"></g>
+          <g id="map-trails"></g>
+          <g id="map-active"></g>
+          <g id="map-chargers"></g>
+          <g id="map-cities"></g>
+          <g id="map-units"></g>
+        </svg>
+        <ul class="events" id="event-list"></ul>
+      </div>
+    </section>
+
+    <section class="case" id="context">
+      <div id="job-view">
+        <div class="case-head">
+          <div>
+            <p class="mono muted" id="case-id">J-01</p>
+            <h1 id="case-name">Cluj</h1>
+            <p class="sub" id="case-sub"></p>
+          </div>
+          <div class="decision-card" id="decision-card">
+            <p class="kicker tight">Recommendation</p>
+            <p class="decision" id="case-decision"></p>
+            <p class="mono small" id="case-rule"></p>
+          </div>
+        </div>
+        <div class="card action-card">
+          <p class="kicker">If this went live</p>
+          <p class="live-copy">Dispatcher <strong id="who-clicks">A. Pop</strong> must click before it sends. Undo last send if the click was wrong. Log writes time, job, vehicle, decision, rule, quote.</p>
+          <ul class="warn" id="warn-list"></ul>
+          <div class="actions">
+            <button type="button" id="confirm-btn" class="primary">Confirm send</button>
+            <button type="button" id="undo-btn" class="ghost">Undo last send</button>
+          </div>
+          <p class="hint" id="action-hint">A recommendation is not a send.</p>
+          <div class="quote" id="quote-box">
+            <p class="kicker" id="quote-from"></p>
+            <p id="quote"></p>
+          </div>
+          <ul class="checks" id="gates"></ul>
+        </div>
+      </div>
+
+      <div id="vehicle-view" hidden>
+        <button type="button" class="back" id="back-board">← Board</button>
+        <div class="veh-hero">
+          <div>
+            <p class="kicker">Vehicle</p>
+            <h1 id="veh-id">T-11</h1>
+            <p class="sub" id="veh-place"></p>
+          </div>
+          <span class="badge" id="veh-status">Free</span>
+        </div>
+        <div class="card">
+          <div class="range-row">
+            <p class="kicker">Range</p>
+            <p class="mono" id="range-text">180 / 180 km</p>
+          </div>
+          <div class="bar"><i id="range-fill"></i></div>
+          <p class="hint" id="range-drain">Idle. Range holds.</p>
+        </div>
+        <div class="card work-card">
+          <p class="kicker">Current work</p>
+          <p class="work-title" id="work-title"></p>
+          <p class="proc" id="work-detail"></p>
+          <div class="bar"><i id="work-fill"></i></div>
+          <p class="eta" id="work-eta"></p>
+        </div>
+        <div class="card">
+          <p class="kicker">Shift board</p>
+          <ul class="sked" id="veh-schedule"></ul>
+        </div>
+        <div class="card action-card">
+          <p class="kicker">Dispatcher actions</p>
+          <p class="hint" id="veh-advice"></p>
+          <div class="actions wrap" id="veh-actions"></div>
+          <p class="hint">Yard crew is not on the roster. Chargers are places, not vehicles.</p>
+        </div>
+      </div>
+
+      <div class="split lower">
+        <div class="card">
+          <p class="kicker">Audit log</p>
+          <ul class="log" id="log-list">
+            <li class="empty">No sends yet.</li>
+          </ul>
+        </div>
+        <div class="ask">
+          <p class="kicker gold">Ask the desk</p>
+          <p class="ask-hint">The desk only assigns jobs from the roster. It will not give medical, legal, or payment advice.</p>
+          <form id="ask-form">
+            <input id="ask-input" type="text" placeholder="What should we pay the driver?" autocomplete="off">
+            <button type="submit">Send to desk</button>
+          </form>
+          <div id="ask-result" hidden></div>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script src="/app.js"></script>
+</body>
+</html>
