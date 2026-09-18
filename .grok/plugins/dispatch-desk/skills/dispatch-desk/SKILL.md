@@ -1,17 +1,25 @@
 ---
 name: dispatch-desk
-description: Assign jobs from the local roster and queue. Use when a dispatcher opens J-01 or J-02, asks to send T-11 / T-12 / T-14, or asks medical, legal, or payment advice. Slash command /dispatch-desk.
+description: Assign kit jobs from instructions/jobs.json to instructions/vehicles.json using DSP-1..DSP-4. Use when dispatching fleet jobs, citing dispatch rules, running lookup_rule, or demonstrating the dispatch desk. Trigger phrases: dispatch, assign vehicle, T-14, lookup_rule.
 ---
 
-# Assign a job
+# Dispatch desk
 
-1. If the user asks for a payout, a settlement, medical advice, a dose, or legal advice: refuse. Do not invent a rule id. Say the desk only assigns jobs from the roster. Stop.
-2. Load `jobs.json` and `vehicles.json`. Do not guess a vehicle that is not in the roster.
-3. Call MCP `lookup_rule` (server `rules`) with the gap (for example `free`, `range`, `red`, `invent`).
-4. Decide only from the returned lines:
-   - Status red → Refuse, quote DSP-3. T-14 stays refused.
-   - Vehicle missing from `vehicles.json` → Refuse, quote DSP-4.
-   - Not free or hours_ok false → Refuse, quote DSP-1.
-   - Job km not less than range_km → Refuse, quote DSP-2.
-   - Free, hours_ok, and km < range_km → Assign, quote DSP-1.
-5. A recommendation is not a send. The dispatcher must confirm. Reply with Decision, vehicle id or Refuse, rule id, and the quoted rule line.
+Kit under `instructions/` is immutable. Quotes come from `rules__lookup_rule`, never from memory. Interpreter is `python`, not `python3`. Do not invent T-15 or DSP-5. Do not copy workshop HTML.
+
+## Steps
+
+1. `list_dir` / read the four kit files under `instructions/`: `dispatch_rules.md`, `vehicles.json`, `jobs.json`, `rules_mcp.py`. Write nothing yet.
+2. Call `rules__lookup_rule` with query `DSP-1`, then `DSP-2`, then `DSP-3`. Do not recite rules from memory.
+3. Run `python dispatch.py` (both jobs) or `python dispatch.py J-01` for one job.
+4. Run `python -m unittest test_dispatch -v`.
+5. Never edit `dispatch_rules.md`, `*_rules.md`, kit JSON, or `rules_mcp.py`.
+6. Never invent a vehicle. Only T-11, T-12, T-14.
+
+T-14 is always refuse; the DSP-3 line must be the `lookup_rule` hit. Both jobs assign T-11.
+
+## Demo laptop
+
+MCP is project-scoped in `.grok/config.toml`. If `grok mcp doctor rules` is green, do not `grok mcp add` — show `grok mcp list` (`rules (project)`).
+
+Plugin packs skill + hook only (no `.mcp.json`). Enable: `grok plugin enable dispatch-desk` or Space in `/plugins`, after folder trust (`grok --trust` / `/hooks-trust`). Project `.grok/skills/` and `.grok/hooks/` still show if the plugin is off.

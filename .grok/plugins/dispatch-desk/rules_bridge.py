@@ -4,10 +4,14 @@ from pathlib import Path
 import runpy
 
 here = Path(__file__).resolve()
+candidate = None
 for parent in here.parents:
-    candidate = parent / "rules_mcp.py"
-    if candidate.exists():
-        runpy.run_path(str(candidate), run_name="__main__")
+    for path in (parent / "instructions" / "rules_mcp.py", parent / "rules_mcp.py"):
+        if path.exists():
+            candidate = path
+            break
+    if candidate is not None:
         break
-else:
+if candidate is None:
     raise SystemExit("rules_mcp.py not found")
+runpy.run_path(str(candidate), run_name="__main__")

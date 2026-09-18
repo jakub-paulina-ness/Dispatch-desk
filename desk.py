@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Rerun the dispatch desk from the kit files in this folder."""
+"""Rerun the dispatch desk from the kit files under instructions/."""
 from __future__ import annotations
 
 import argparse
@@ -9,9 +9,10 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
-RULE_FILE = ROOT / "dispatch_rules.md"
-VEHICLES_FILE = ROOT / "vehicles.json"
-JOBS_FILE = ROOT / "jobs.json"
+KIT = ROOT / "instructions"
+RULE_FILE = KIT / "dispatch_rules.md"
+VEHICLES_FILE = KIT / "vehicles.json"
+JOBS_FILE = KIT / "jobs.json"
 
 OFF_SCOPE = re.compile(
     r"\b("

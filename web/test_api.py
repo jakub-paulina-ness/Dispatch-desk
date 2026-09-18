@@ -149,14 +149,15 @@ class WebUsesDesk(unittest.TestCase):
         self.assertGreater(sim.vehicle("T-11")["range_km"], before)
 
     def test_kit_files_unchanged(self) -> None:
-        vehicles = json.loads((ROOT / "vehicles.json").read_text(encoding="utf-8"))
-        jobs = json.loads((ROOT / "jobs.json").read_text(encoding="utf-8"))
+        kit = ROOT / "instructions"
+        vehicles = json.loads((kit / "vehicles.json").read_text(encoding="utf-8"))
+        jobs = json.loads((kit / "jobs.json").read_text(encoding="utf-8"))
         self.assertEqual([row["id"] for row in vehicles], ["T-11", "T-12", "T-14"])
         self.assertEqual(vehicles[2]["status"], "red")
         self.assertEqual([row["id"] for row in jobs], ["J-01", "J-02"])
         server.confirm("J-01", "T-11")
         server.call_service("T-14")
-        vehicles_after = json.loads((ROOT / "vehicles.json").read_text(encoding="utf-8"))
+        vehicles_after = json.loads((kit / "vehicles.json").read_text(encoding="utf-8"))
         self.assertEqual(vehicles, vehicles_after)
 
 

@@ -13,3 +13,9 @@ Thumbs.db
 *.egg-info/
 .idea/
 .vscode/
+
+# Local-only workshop screenshots
+.docs/reference/04-kit-subory.png
+.docs/reference/05-ako-rozhoduje.png
+.docs/reference/co-treba-robit.png
+.docs/reference/zadanie.png
