@@ -38,10 +38,10 @@ for job in jobs:
 
 ## Acceptance
 
-- [ ] Six events, roster order, both jobs.
-- [ ] `start_driver` invoked twice (J-01/T-11, J-02/T-11) and never for T-12 or T-14.
-- [ ] Event `kind`/`dsp_ids` match S-00 table.
-- [ ] No read of `locations.json` for eligibility.
+- [x] Six events, roster order, both jobs.
+- [x] `start_driver` invoked twice (J-01/T-11, J-02/T-11) and never for T-12 or T-14.
+- [x] Event `kind`/`dsp_ids` match S-00 table.
+- [x] No read of `locations.json` for eligibility.
 
 ## Parallel
 

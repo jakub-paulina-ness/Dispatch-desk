@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | **Owner** | All (Jakub freeze) |
-| **Status** | ready |
+| **Status** | **done** |
 | **Blocked on** | nothing |
 
 This is the file you implement against. Do not wait for someone else's PR if your story says "S-00 only".

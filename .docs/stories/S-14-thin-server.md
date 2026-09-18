@@ -4,9 +4,11 @@
 |---|---|
 | **Owner** | Marian |
 | **Layer** | B — stretch |
-| **Status** | ready |
-| **Blocked on** | S-02 engine + S-10 HTML. Cut without guilt if dry-run > 4 minutes. |
-| **Unblocks** | One-URL live desk |
+| **Status** | **done** |
+| **Blocked on** | — |
+| **Unblocks** | One-URL thin desk on 8765 |
+
+Live yard on 8770 is a **separate** board (`desk.py` + `web/`). Both exist.
 
 ## Goal
 
@@ -24,10 +26,10 @@ JSON shapes: [S-00](S-00-contracts.md). Define response wrappers in this story i
 
 ## Acceptance
 
-- [ ] Bind `127.0.0.1` only, port 8765.
-- [ ] `/api/dispatch` matches CLI outcomes (T-11 ASSIGN, T-14 REFUSE).
-- [ ] No workshop HTML. No pip.
-- [ ] If the process dies, demo continues with `python dispatch.py` (S-04 fallback).
+- [x] Bind `127.0.0.1` only, port 8765.
+- [x] `/api/dispatch` matches CLI outcomes (T-11 ASSIGN, T-14 REFUSE).
+- [x] No workshop HTML. No pip.
+- [x] If the process dies, demo continues with `python dispatch.py` (S-04 fallback).
 
 ## Out of scope
 

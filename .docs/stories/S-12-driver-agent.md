@@ -41,12 +41,12 @@ Demo clock: compress so J-02 drive + CS-2 charge is visible in < 45 s.
 
 ## Acceptance
 
-- [ ] J-01 playback: no charge required; may pass CS-1 without stopping.
-- [ ] J-02 playback: leftover ~20 km → CS-2, `charger_power_kw == 150`.
-- [ ] CS-4 (350 kW) never selected on kit jobs.
-- [ ] TelemetryEvent stream matches S-00 schema.
-- [ ] T-14 never emits telemetry.
-- [ ] Does not import assignment rules; does not write kit files.
+- [x] J-01 playback: no charge required; may pass CS-1 without stopping.
+- [x] J-02 playback: leftover ~20 km → CS-2, `charger_power_kw == 150`.
+- [x] CS-4 (350 kW) never selected on kit jobs.
+- [x] TelemetryEvent stream matches S-00 schema.
+- [x] T-14 never emits telemetry.
+- [x] Does not import assignment rules; does not write kit files.
 
 ## Parallel
 

@@ -3,7 +3,8 @@
 MUST_SHOW = r"""MUST-SHOW  (Dispatch-desk)
 [1] inspect   instructions\{vehicles.json, jobs.json, dispatch_rules.md, rules_mcp.py}
 [2] AGENTS.md AGENTS.md
-[3] plan      .docs\specification\architecture.md
+[3] plan      PLAN.md
+              .docs\specification\architecture.md
 [4] skill     .grok\skills\dispatch-desk\SKILL.md
               .grok\plugins\dispatch-desk\skills\dispatch-desk\SKILL.md
 [5] hook      .grok\hooks\protect-rules.json

@@ -6,29 +6,41 @@ Work in this folder (`Dispatch-desk`). Kit files from the track page live under 
 
 One working agent. Live demo, not slides. Kit files are the only source of rules.
 
+Status of the work (what shipped, what is left): [PLAN.md](PLAN.md). Roles: [TEAM.md](TEAM.md). Design spec: [.docs/specification/architecture.md](.docs/specification/architecture.md). Stories: [.docs/stories/README.md](.docs/stories/README.md).
+
 ## Run
 
+Graded path (must-show):
+
 ```
-python test_desk.py
-python web/test_api.py
+python pipelines/show_lab.py
+python dispatch.py
+python -m unittest test_dispatch -v
+```
+
+Thin desk (S-14, optional): `python src/dispatch_server.py` → http://127.0.0.1:8765/
+
+Live yard (optional):
+
+```
 python web/server.py
 ```
 
 Board: http://127.0.0.1:8770/
 
-Backup if the page is down: `python desk.py --demo`
+Also: `python test_desk.py`, `python web/test_api.py`.
+
+Backup if the page is down: `python dispatch.py` or `python desk.py --demo`.
 
 ## Demo in 90 seconds
 
 1. Track: assign from the roster, refuse anything red.
-2. Pass: J-01 → Assign T-11, quote DSP-1, Confirm send.
-3. Refuse: T-14 → Refuse, quote DSP-3.
+2. Pass: `python dispatch.py` — J-01 and J-02 → ASSIGN T-11, SKIP T-12, REFUSE T-14.
+3. Test: `python -m unittest test_dispatch -v`.
 4. Point at AGENTS.md, the skill, the hook, MCP `lookup_rule`.
-5. Stop.
+5. Optional: Confirm send on the live yard. Stop.
 
-## Team
-
-Roles, branches, and file ownership: [TEAM.md](TEAM.md)
+Spoken script: [presenter.md](presenter.md). Clock: [pipelines/DEMO.md](pipelines/DEMO.md).
 
 ## Kit (do not edit)
 

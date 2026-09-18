@@ -2,7 +2,7 @@
 
 Live fleet dispatch for Grok Enablement Track 4.1. Assign kit jobs to kit vehicles using DSP-1…DSP-4, cite the rule file, refuse T-14. Grok is the **operator**. The assignment algorithm is a **deterministic script**, not the model.
 
-Durable plan: `.docs/specification/architecture.md`. Stories: `.docs/stories/README.md`.
+Durable design: `.docs/specification/architecture.md`. Status and leftovers: `PLAN.md`. Team: `TEAM.md`. Stories: `.docs/stories/README.md`.
 
 ## Inspect first
 

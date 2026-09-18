@@ -6,7 +6,7 @@
 | **Layer** | B — wow |
 | **Status** | done |
 | **Blocked on** | [S-00](S-00-contracts.md) only. Use fixtures until S-11/S-14. |
-| **Unblocks** | S-14 can serve this page |
+| **Unblocks** | S-14 serves this page on 8765 |
 
 ## Goal
 
@@ -30,7 +30,7 @@ Do **not** copy workshop HTML/CSS/JS.
 
 ## Data
 
-- Prefer `GET /api/dispatch` later (S-14). Until then load `pipelines/fixtures/dispatch_events.json`.
+- S-14 serves this page from `127.0.0.1:8765`. Live yard on 8770 is a separate board.
 - Telemetry: poll `/api/telemetry` or a fixture array. Empty panel is OK on day one; do not block section 1–4 on Marian.
 - Chargers: read `.docs/reference/locations.json` (or a copy served as `/api/locations`). Show `power_kw` on each pin/row.
 

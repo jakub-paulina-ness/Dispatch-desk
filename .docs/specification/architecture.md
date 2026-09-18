@@ -5,13 +5,13 @@
 | **Document** | Dispatch Desk (Grok Enablement Workshop Track 4.1) |
 | **Author** | Jakub (architect) / Grok Build `/plan` work product |
 | **Date** | 2026-09-18 |
-| **Status** | Draft — revision 2026-09-18 (user: **all data are in reference**). Canonical client pack is `.docs/reference/`. Awaiting team sign-off before engine path changes. |
-| **Repo** | `C:\Users\P3503318\Desktop\DispatchProject` |
-| **Audience** | Ondrej (dev), Marek (QA auto), Peťo (QA acceptance), Marian (integration + live demo) |
+| **Status** | Design freeze. **Shipped vs leftover:** repo-root `PLAN.md`. Team: repo-root `TEAM.md`. |
+| **Repo** | `C:\Users\P3503707\Downloads\Dispatch-desk` |
+| **Audience** | Ondrej (presenter), Marek (QA auto + live yard), Peťo (engine), Marian (integration + demo), Jakub (architect) |
 | **Durable copy** | `.docs/specification/architecture.md` |
-| **Session plan** | Grok Build `plan.md` is ephemeral; this file is the source of truth |
+| **Session plan** | Grok Build `plan.md` is ephemeral; this file is the design spec; `PLAN.md` is what actually landed |
 
-**Revision (user: all data in reference):** `.docs/reference/` is the canonical client/data pack. Engine, MCP `handle()`, and sim load from there. `instructions/` is a workshop-shaped **mirror** of the four assignment files only. `locations.json` is sim-only (S-13, done). Frozen J-01/J-02 → T-11 outcomes unchanged.
+**Implemented (do not “fix” toward this paragraph without a new team decision):** assignment kit path is `instructions/` (`KIT_DIR` in `src/dispatch.py`, MCP args, `T-LOAD-PATH`). `.docs/reference/` holds the brief, screenshots, copies of the four assignment files, and sim-only `locations.json`. S-14 is **done** (`src/dispatch_server.py` on `127.0.0.1:8765`). Live yard is a second board: `desk.py` + `web/` on `127.0.0.1:8770`. KD-8 below still describes a reference-as-assignment-source plan that **did not ship**.
 
 **Gate:** Do not invent T-15 or DSP-5. Do not put lat/lon in `locations.json`. Do not use `locations.json` in `evaluate_vehicle` / `dispatch_job`. Do not edit kit files except to keep the four-file `instructions/` mirror text-equal to reference if both exist.
 

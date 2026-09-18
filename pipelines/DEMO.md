@@ -55,7 +55,7 @@ Layer B (map / CS-2 150 kW) is **after Hotovo**, optional, **≤ 60 s**. Cut wit
 |---|---|---|
 | **MS-1** inspect | Four kit files under `instructions/` | `python pipelines/show_lab.py` |
 | **MS-2** AGENTS.md | Repo-root project instruction | `grok inspect` |
-| **MS-3** plan | `.docs/specification/architecture.md` | open that file / `/plan` |
+| **MS-3** plan | `PLAN.md` + `.docs/specification/architecture.md` | open those files / `/plan` |
 | **MS-4** skill | Project **and** plugin `SKILL.md` | paths from `show_lab`; `/skills` |
 | **MS-5** hook | Project **and** plugin hooks; deny write | ask Grok to `write` `instructions/dispatch_rules.md` |
 | **MS-6** MCP | `rules (project)` + live DSP-3 | `grok mcp list` then `rules__lookup_rule` query `DSP-3` |
@@ -101,7 +101,13 @@ python src/sim/driver.py J-02 --no-sleep
 
 Look for `charger_id: CS-2` and `charger_power_kw: 150`. CS-4 is unreachable. Do not start a driver for T-14.
 
-If `src/dispatch_server.py` is up: `http://127.0.0.1:8765` only. If it is not running, **do not start it in front of the jury**.
+Optional UI (pick one, skip if the clock is hot):
+
+```text
+python src/dispatch_server.py
+```
+
+S-10 page: `http://127.0.0.1:8765/`. Live yard (confirm / undo / map): `python web/server.py` → `http://127.0.0.1:8770/`. If neither is already up, **do not start it in front of the jury** unless a minute remains. Fallback stays `python dispatch.py`.
 
 ---
 

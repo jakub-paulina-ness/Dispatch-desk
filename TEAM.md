@@ -1,237 +1,112 @@
-# Five people, one laptop, one story
+# Dispatch desk — who owns what
 
-Judges score **what they can see run**. Slides do not count. The live demo is on **one laptop**. Git is for sharing and merging, not for five different versions on stage.
+Five people, one laptop, one story. Judges score **what they can see run**. Git is for sharing and merging, not five different versions on stage.
 
-Work only in `C:\Users\P3503707\Downloads\Dispatch-desk`. This folder has the track kit and the shared git remote. Do not invent a rule file. Do not edit kit files.
+Work only in this folder. Kit under `instructions/` is immutable. Do not invent a rule file. Do not invent T-15 or DSP-5. Interpreter is `python`, never `python3`.
 
 Repo: https://github.com/jakub-paulina-ness/Dispatch-desk
 
-## GitHub
+The old P1–P5 branch table (`p2-ui`, `p3-grok`, …) is retired. Named owners and stories replaced it. Status of the work: `PLAN.md`.
 
-Shared remote is already set. P1 pushes `main`. Everyone else clones that URL.
+## People (what they actually shipped)
 
-If a teammate still needs write access: repo Settings → Collaborators, or:
+Git authors on `main` mapped to the names in architecture / stories.
 
-```
-gh repo add-collaborator USER --repo jakub-paulina-ness/Dispatch-desk --permission push
-```
+| Person | Git | Role | Shipped on this repo |
+| --- | --- | --- | --- |
+| **Jakub** | `jakub-paulina-ness` | Architect + Grok project rules | `.docs/specification/architecture.md`, stories/S-13, MCP `rules` in `.grok/config.toml`, `AGENTS.md`, later live-yard map motion |
+| **Marek** | `marek-pilarcik-ness` | QA auto + this laptop | S-03 `tests/test_dispatch.py`, S-10 `src/web/`, live yard (`desk.py`, `web/`, confirm/undo/map), merge captain, `create-issue` / `fix-issue` / `run-app` |
+| **Marian** | `mlapko-ness` | Integration + a lot of Layer A | Kit + early TEAM split, S-05 skill/hook/plugin/`show_lab.py`, S-02 engine, S-11 dispatcher, S-12 driver, S-04 `pipelines/DEMO.md` |
+| **Peťo** | `Peter Zagora` | Engine + dispatcher (parallel) | S-02 / S-11 commits (`src/dispatch.py`, `src/dispatcher.py`) |
+| **Ondrej** | `Ondrej Matija` | Presenter | `presenter.md`. Unassigned from S-02. |
 
-## Offline share (Teams / USB)
+Stories named Jakub for S-05 and Peťo for S-02/S-04. On git, Marian landed those files; Peťo also pushed engine/dispatcher. Treat the **files** as done regardless of who typed them.
 
-From this laptop:
+## Current file ownership
 
-```
-git bundle create ..\hackathon-dispatch-desk.bundle main
-```
-
-Everyone else:
-
-```
-git clone hackathon-dispatch-desk.bundle hackathon-dispatch-desk
-cd hackathon-dispatch-desk
-```
-
-The bundle is a snapshot. Prefer the GitHub remote.
-
-## How to join
-
-1. Send your GitHub username to the captain (P1).
-2. Wait for the invite, then:
-
-```
-git clone https://github.com/jakub-paulina-ness/Dispatch-desk.git
-cd Dispatch-desk
-git checkout -b pN-your-role
-python test_desk.py
-python web/server.py
-```
-
-3. Edit **only your files**. Another person's file = issue or ping the owner.
-4. Open a PR into `main`. P1 merges. `main` must always be a working demo.
-
-## Branches
-
-| Branch | Who | Purpose |
-| --- | --- | --- |
-| `main` | P1 merges | Always demoable. Nobody force-pushes except P1. |
-| `p2-ui` | P2 | Look, Assign vs Refuse readable from across the table |
-| `p3-grok` | P3 | AGENTS.md, skill, hook, plugin, MCP |
-| `p4-live` | P4 | Confirm, undo, log, "if this went live" |
-| `p5-tests` | P5 | desk.py, tests, off-scope, quotes |
-
-Rule: small PRs, one change, green tests. Kit files are not edited.
-
-## File ownership
-
-If two people edit the same file, we lose to a merge conflict, not to the demo.
+Edit **only your files** unless you ping the owner. Kit: nobody.
 
 | Person | May edit | Must not edit |
 | --- | --- | --- |
-| **P1 Demo captain** | `README.md`, `TEAM.md`, merges to `main` | Product code without agreement |
-| **P2 UI** | `web/index.html`, `web/styles.css`, `web/app.js`, `web/display.json` | `desk.py`, kit, `.grok/` |
-| **P3 Grok pack** | `AGENTS.md`, `.grok/**` | `web/`, `desk.py`, kit |
-| **P4 Live ops** | `web/server.py` | `web/app.js` (send P2 the exact copy/API), kit |
-| **P5 Rules + tests** | `desk.py`, `test_desk.py`, `web/test_api.py` | UI, kit, `.grok/` |
+| **Jakub** | `AGENTS.md`, `.docs/specification/`, `.docs/reference/` (except the four assignment copies — those are kit-shaped, do not “improve”), `.grok/skills/dispatch-desk/`, `.grok/hooks/protect*`, `.grok/plugins/dispatch-desk/`, `.grok/config.toml`, `pipelines/show_lab.py` | `instructions/`, engine DSP sentences |
+| **Marek** | `tests/`, `test_dispatch.py`, `src/web/`, `desk.py`, `test_desk.py`, `web/` (live yard), `.grok/skills/create-issue/`, `fix-issue/`, `run-app/` | `instructions/`, inventing T-15 cases |
+| **Marian** | `src/sim/`, `src/dispatcher.py` (shared with Peťo), `pipelines/DEMO.md`, live demo laptop wiring | `instructions/`, a second assigner |
+| **Peťo** | `src/dispatch.py`, root `dispatch.py` shim, `src/dispatcher.py` | `instructions/`, hardcoded DSP sentence bodies |
+| **Ondrej** | `presenter.md` | product code unless agreed |
 
-Kit (nobody): `dispatch_rules.md`, `vehicles.json`, `jobs.json`, `rules_mcp.py`.
+Shared docs: `PLAN.md`, this file, `.docs/stories/` — anyone updates status; do not rewrite acceptance after the fact without the owner.
 
-If P4 needs a UI change (bigger Confirm, a log row), file an issue for P2: what to add, the exact text, when the button is disabled. P2 draws it. P4 owns the API.
+## Stories vs what landed
 
----
+| Planned | Owner on the board | Actual |
+| --- | --- | --- |
+| S-00 contracts | all | **done** |
+| S-01 AGENTS.md | Jakub | **done** |
+| S-02 engine | Peťo (board); Marian + Peťo (git) | **done** — loads `instructions/` |
+| S-03 tests | Marek | **done** |
+| S-04 runbook | Peťo (board); Marian (git) | **done** — `pipelines/DEMO.md` |
+| S-05 Grok stack | Jakub (board); Marian (git) | **done** — skill + hook + plugin, MCP project-scoped |
+| S-10 HTML | Marek | **done** — `src/web/`, served on 8765 |
+| S-11 dispatcher | Peťo / Marian | **done** |
+| S-12 driver | Marian | **done** |
+| S-13 locations | Jakub | **done** |
+| S-14 thin server | Marian | **done** — `src/dispatch_server.py` on 8765 |
+| Live yard | (not a story) | **done** freestyle — Marek, later Jakub — 8770 |
+| Presenter | (not a story) | **done** — Ondrej |
+| ISS-001 | — | **open** — extra live jobs, no kit edits |
 
-## P1 — Demo captain / laptop
+## Git
 
-**Goal:** 90 seconds, one story, nothing missing on stage.
+Shared remote is already set. Marek’s checkout is the demo laptop (`C:\Users\P3503707\Downloads\Dispatch-desk`). `main` must always be demoable. Small PRs, green tests, no force-push except the captain.
 
-Git user: Marek (`marek-pilarcik-ness`). This is the demo laptop.
+```text
+python dispatch.py
+python -m unittest test_dispatch -v
+python test_desk.py
+python web/test_api.py
+```
 
-### You do
+Branches that existed for stories (`story/S-03-dispatch-tests`, `story/S-10-html-desk`, `feature/dispatch-desk`, `ondrej`) are historical. New work: short branch, PR into `main`.
 
-- Invite people to the repo.
-- Merge PRs into `main`. After every merge: `python test_desk.py` and `python web/test_api.py`.
-- Demo setup: browser on `http://127.0.0.1:8770/`, `grok inspect` next to it, this folder open.
-- Freeze **15 minutes before the demo**. No more merges.
+## Live demo — who does what
 
-### Script (memorize it)
+Order from `pipelines/DEMO.md` (3–4 min). One person talks.
 
-1. "Dispatch desk. We assign a job from the roster. A red vehicle is refused."
-2. Click **J-01** → Assign T-11, quote DSP-1 → **Confirm send**.
-3. Click **T-14** → Refuse, quote DSP-3.
-4. Point at `AGENTS.md`, the skill, the hook, MCP `lookup_rule` (`grok inspect`).
-5. Stop. Wait for questions.
+1. **Peťo / Marian** — `python pipelines/show_lab.py` then `python dispatch.py`
+2. **Marek** — `python -m unittest test_dispatch -v`
+3. **Jakub** — `rules__lookup_rule` query `DSP-3`; point at skill / hook / plugin
+4. **Marian / Marek** — optional live yard `http://127.0.0.1:8770/` or `python src/sim/driver.py J-02 --no-sleep`
+5. **Ondrej** — `presenter.md` if a voice agent is driving the script
+6. Stop. Questions from judges only.
 
-"If this went live": the dispatcher A. Pop must Confirm before it sends. Undo last send. The log is `dispatch.log`.
+Backup: `python dispatch.py`. If the page is down, do not debug on stage.
 
-Backup: `python desk.py --demo`
+## If we continue — leftover owners
 
-### Done when
+From `PLAN.md` Remaining:
 
-- One laptop, one tab with the board, one with inspect, one with AGENTS.md.
-- You can say it in 90 seconds with no slides.
-- You can answer: who clicks, how to undo, what goes in the log.
-
----
-
-## P2 — UI / Assign vs Refuse from three meters
-
-**Goal:** a judge across the table sees Assign vs Refuse immediately.
-
-### You do
-
-- Color, type, layout. Dark ops board. Not Alder Health parchment.
-- T-14 must read as out of service at a glance.
-- Confirm is the largest button on the page. Disabled when the decision is Refuse.
-- After Confirm, T-11 looks busy with no confusion.
-- Mobile 375px and desktop 1280px. The demo is a laptop; the layout must not break.
-- No new cities, vehicles, or rule text. Kit fields plus chrome only.
-
-### Polish list
-
-1. Decision card: Assign green, Refuse red, type about 28px+.
-2. Roster: T-14 red badge "Out of service", T-12 amber "Busy", T-11 green "Free".
-3. "Quoted from DSP-x" must be readable, not grey on grey.
-4. Ask the desk placeholder stays *What should we pay the driver?* — that is the off-scope demo.
-5. Nothing that looks like a slide (no hero "Welcome to our solution").
-
-### Done when
-
-- Three-meter test: someone behind you can say Assign or Refuse without reading a paragraph.
-- `python web/test_api.py` still passes (you do not change the API).
-
----
-
-## P3 — Grok Build pack
-
-**Goal:** `grok inspect` lists everything judges asked for, and you can point at it in 15 seconds.
-
-### You do
-
-- `AGENTS.md` — short, hard rules. No essay.
-- Skill `.grok/skills/dispatch-desk/SKILL.md` — 5 steps, `lookup_rule`, T-14 = DSP-3.
-- Hook `.grok/hooks/desk_guard.py` — block off-scope advice; deny kit-file edits.
-- Plugin `.grok/plugins/dispatch-desk/` — skill + hook + MCP in one pack.
-- `.grok/config.toml` — `rules` MCP + plugin enabled.
-
-### Polish list
-
-1. Run `grok inspect` after every change. It must show: project instructions, skill `dispatch-desk`, plugin `dispatch-desk`, MCP `rules`, hook.
-2. `grok plugin list` may falsely say "none". Show **inspect**, not plugin list.
-3. The skill must not invent a rule id. Off-scope = no fake DSP.
-4. Prepared line: "The hook blocks a payout prompt and an edit to `dispatch_rules.md`."
-5. If there is time: in a Grok session call `lookup_rule` with query `red` → DSP-3.
-
-### Done when
-
-- Inspect checklist is complete.
-- You can click AGENTS.md → SKILL.md → desk_guard.py → rules_mcp.py without searching.
-
----
-
-## P4 — If this went live
-
-**Goal:** a judge believes this could hang on a dispatch wall.
-
-Judging row: *who must click before it sends, how you undo a bad change, what you would write in a log.*
-
-### You do
-
-- `web/server.py`: Confirm, Undo, busy overlay, `dispatch.log`.
-- The API does not change what a decision means. `desk.py` decides.
-- Copy for P2 (issue, not a direct JS edit): "Dispatcher A. Pop must click before it sends."
-
-### Polish list
-
-1. Confirm without Assign → nothing is sent (T-14 confirm must fail).
-2. Undo returns T-11 to free. Kit files stay the same.
-3. Log line: time, dispatcher, job, vehicle, decision, rule id, quoted line.
-4. `dispatch.log` is gitignored. The server owns the format.
-5. No payout, no amount, no "we will pay".
-
-### Done when
-
-- You can say it in one sentence on stage when P1 turns to you.
-- `python web/test_api.py` — confirm / undo / T-14 tests green.
-
----
-
-## P5 — Rules + tests
-
-**Goal:** T-14 stays refused while others polish the UI. No invented rule.
-
-### You do
-
-- `desk.py` — assign and refuse from the kit only.
-- `test_desk.py` — lock the demo cases.
-- `web/test_api.py` — the UI layer still quotes the same rules.
-
-### Polish list
-
-1. `test_t14_stays_refused` is sacred. It must not fail.
-2. J-01 → Assign T-11, DSP-1, quote is a substring of `dispatch_rules.md`.
-3. T-12 → Refuse DSP-1. T-99 → Refuse DSP-4.
-4. Off-scope ("What should we pay the driver?") → Off desk, `rule == ""`.
-5. Hook test: payout prompt returncode 2; edit `dispatch_rules.md` denied.
-6. After every PR from someone else: run both test suites before P1 merges.
-
-### Done when
-
-- `python test_desk.py` and `python web/test_api.py` green on clean `main`.
-- On a judge question you can open `dispatch_rules.md` and show the line that just ran on screen.
-
----
+| Leftover | Suggested owner |
+| --- | --- |
+| Wire live yard to `dispatch_job` (one assigner; T-12 SKIP vs Refuse) | Marek (`desk.py` / `web/`) + Peťo (engine contract) |
+| Pick 8765 (S-14) vs 8770 (live yard) for the jury | Marian / Marek |
+| Architecture header / KD-8 vs `instructions/` | Jakub (docs only unless the team wants a path migration) |
+| Add T-LOC-NOT-ENGINE to `tests/test_dispatch.py` | Marek |
+| Document hook split (`protect_rules` / `protect_vehicles` / `desk_guard`) | Jakub |
+| ISS-001 extra live jobs | whoever takes `/fix-issue` |
 
 ## Do not polish
 
-- New vehicles, cities, or rule ids.
-- Medical, legal, or payment advice.
-- Slides.
-- A second laptop "just in case" with different code.
-- Editing kit files because it would look nicer.
+- New vehicles, cities, or rule ids
+- Medical, legal, or payment advice
+- Slides as the demo
+- A second laptop with different code
+- Editing kit files because it would look nicer
+- `python3` in runnable commands
 
 ## Definition of done for the table
 
-- Pass and refuse run live from `main`.
-- Inspect shows AGENTS.md, skill, hook, MCP.
-- Confirm / undo / log can be shown in one sentence.
-- Tests green.
-- One person talks. The other four stay quiet until questions.
+- Pass and refuse run live from `main` (`python dispatch.py`)
+- Inspect shows AGENTS.md, skill, hook, MCP
+- Confirm / undo / log can be shown on the live yard, or skipped if the CLI is the demo
+- Tests green
+- One person talks. The others stay quiet until questions

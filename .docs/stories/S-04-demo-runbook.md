@@ -18,12 +18,12 @@ As acceptance QA, I want a 3–4 minute spoken checklist so the laptop shows ins
 
 ## Acceptance
 
-- [ ] Checklist MS-1…MS-8 and Hotovo A/B/C with the exact command to type.
-- [ ] Spoken timestamps (architecture demo table is the default).
-- [ ] Windows only: `python pipelines/show_lab.py`, `python dispatch.py`, `python -m unittest test_dispatch -v`. Never `python3`.
-- [ ] Stage 3 laptop wiring: `grok mcp doctor rules` — if green, do **not** re-add; show `grok mcp list`. Folder trust. Plugin enable. Hook deny rehearsal (`search_replace` / `write` on `instructions/dispatch_rules.md`).
-- [ ] Fallback line: if UI dies, continue on CLI.
-- [ ] Layer B (map / charger) is **after** Hotovo, optional, ≤ 60 s.
+- [x] Checklist MS-1…MS-8 and Hotovo A/B/C with the exact command to type.
+- [x] Spoken timestamps (architecture demo table is the default).
+- [x] Windows only: `python pipelines/show_lab.py`, `python dispatch.py`, `python -m unittest test_dispatch -v`. Never `python3`.
+- [x] Stage 3 laptop wiring: `grok mcp doctor rules` — if green, do **not** re-add; show `grok mcp list`. Folder trust. Plugin enable. Hook deny rehearsal (`search_replace` / `write` on `instructions/dispatch_rules.md`).
+- [x] Fallback line: if UI dies, continue on CLI.
+- [x] Layer B (map / charger) is **after** Hotovo, optional, ≤ 60 s.
 
 ## Parallel
 

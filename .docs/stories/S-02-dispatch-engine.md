@@ -43,10 +43,10 @@ Same block for J-02. `python dispatch.py` and `python dispatch.py J-01`. Unknown
 
 ## Acceptance
 
-- [ ] `python dispatch.py` → both jobs ASSIGN T-11, SKIP T-12, REFUSE T-14.
-- [ ] DSP-3 quote equals `lookup_rule("DSP-3")`.
-- [ ] `python dispatch.py J-01` prints J-01 only.
-- [ ] Source of `src/dispatch.py` does not contain `out of service`, `hours_ok true`, or `less than vehicle range` as literals (including comments).
+- [x] `python dispatch.py` → both jobs ASSIGN T-11, SKIP T-12, REFUSE T-14.
+- [x] DSP-3 quote equals `lookup_rule("DSP-3")`.
+- [x] `python dispatch.py J-01` prints J-01 only.
+- [x] Source of `src/dispatch.py` does not contain `out of service`, `hours_ok true`, or `less than vehicle range` as literals (including comments).
 
 ## Out of scope
 

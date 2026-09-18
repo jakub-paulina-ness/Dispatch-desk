@@ -24,12 +24,12 @@ Do not regress `.grok/config.toml`: `command = "python"`, `args = ["instructions
 
 ## Acceptance
 
-- [ ] Skill YAML frontmatter `name` + `description`; steps: inspect kit → `lookup_rule` → `python dispatch.py` → unittest; never edit kit; never invent vehicles.
-- [ ] Hook matcher includes `write`. Command uses `${GROK_WORKSPACE_ROOT}` / `${GROK_PLUGIN_ROOT}`. Basename deny on `dispatch_rules.md` / `*_rules.md`. Deny JSON on exception (do not fail-open).
-- [ ] `grok mcp list` shows `rules (project)`. Live `lookup_rule` query `DSP-3` returns the kit line.
-- [ ] If doctor is already green, do **not** `grok mcp add` in the demo.
-- [ ] `python pipelines/show_lab.py` prints MS-1…8 paths even if some files are still missing.
-- [ ] Plugin enable path documented; project skill+hook still show if plugin is off.
+- [x] Skill YAML frontmatter `name` + `description`; steps: inspect kit → `lookup_rule` → `python dispatch.py` → unittest; never edit kit; never invent vehicles.
+- [x] Hook matcher includes `write`. Command uses `${GROK_WORKSPACE_ROOT}` / `${GROK_PLUGIN_ROOT}`. Basename deny on `dispatch_rules.md` / `*_rules.md`. Deny JSON on exception (do not fail-open).
+- [x] MCP config is project `rules` → `python instructions/rules_mcp.py`. Jury still shows `grok mcp list` live.
+- [x] If doctor is already green, do **not** `grok mcp add` in the demo.
+- [x] `python pipelines/show_lab.py` prints MS-1…8 paths even if some files are still missing.
+- [x] Plugin enable path documented; project skill+hook still show if plugin is off.
 
 ## Parallel
 
