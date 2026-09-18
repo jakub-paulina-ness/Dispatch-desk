@@ -8,6 +8,148 @@ const state = {
 };
 
 const SVG = "http://www.w3.org/2000/svg";
+const motion = Object.create(null);
+let motionGen = 0;
+let lastFrame = 0;
+
+function hypot2(a, b) {
+  return Math.hypot(b[0] - a[0], b[1] - a[1]);
+}
+
+function pointAlong(points, t) {
+  if (!points || !points.length) return [0, 0];
+  if (points.length === 1 || t <= 0) return [points[0][0], points[0][1]];
+  if (t >= 1) {
+    const last = points[points.length - 1];
+    return [last[0], last[1]];
+  }
+  const lengths = [];
+  let total = 0;
+  for (let i = 1; i < points.length; i += 1) {
+    const len = hypot2(points[i - 1], points[i]);
+    lengths.push(len);
+    total += len;
+  }
+  if (total <= 0) return [points[0][0], points[0][1]];
+  let target = t * total;
+  let acc = 0;
+  for (let i = 0; i < lengths.length; i += 1) {
+    const length = lengths[i];
+    if (acc + length >= target) {
+      const u = length === 0 ? 0 : (target - acc) / length;
+      const a = points[i];
+      const b = points[i + 1];
+      return [a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u];
+    }
+    acc += length;
+  }
+  const last = points[points.length - 1];
+  return [last[0], last[1]];
+}
+
+function headingOf(prev, cur, fallback) {
+  if (hypot2(prev, cur) < 0.4) return fallback;
+  return (Math.atan2(cur[1] - prev[1], cur[0] - prev[0]) * 180) / Math.PI;
+}
+
+function pathKey(path) {
+  if (!path || path.length < 2) return "";
+  const a = path[0];
+  const b = path[path.length - 1];
+  return `${path.length}:${a[0]},${a[1]}:${b[0]},${b[1]}`;
+}
+
+function poseOf(row) {
+  const id = row.id;
+  const path = row.path && row.path.length > 1 ? row.path : null;
+  const pathKm = Number(row.path_km) || 0;
+  const pathDone = Number(row.path_done) || 0;
+  const speedKmh = Number(row.speed_kmh) || 0;
+  let m = motion[id];
+  if (!m || m.gen !== motionGen) {
+    const t = pathKm > 0 ? Math.min(1, pathDone / pathKm) : 0;
+    const p = path ? pointAlong(path, t) : [row.x, row.y];
+    m = {
+      gen: motionGen,
+      x: p[0],
+      y: p[1],
+      heading: row.heading || 0,
+      path,
+      pathKey: pathKey(path),
+      pathKm,
+      pathDone: path ? pathDone : 0,
+      speedKmh,
+    };
+    motion[id] = m;
+    return m;
+  }
+  m.speedKmh = speedKmh;
+  const key = pathKey(path);
+  if (path && key !== m.pathKey) {
+    m.path = path;
+    m.pathKey = key;
+    m.pathKm = pathKm;
+    m.pathDone = pathDone;
+    const p = pointAlong(path, pathKm > 0 ? Math.min(1, pathDone / pathKm) : 0);
+    m.x = p[0];
+    m.y = p[1];
+  } else if (path) {
+    m.path = path;
+    m.pathKm = pathKm;
+  } else {
+    m.path = null;
+    m.pathKey = "";
+    m.pathKm = 0;
+    m.speedKmh = 0;
+  }
+  return m;
+}
+
+function stepMotion(dt) {
+  const sim = (state.board && state.board.sim) || {};
+  const scale = Number(sim.speed || 0) * Number(sim.sim_per_wall_1x || 90);
+  if (dt <= 0) return;
+  for (const id of Object.keys(motion)) {
+    const m = motion[id];
+    if (!m.path || m.path.length < 2 || m.pathKm <= 0 || m.speedKmh <= 0 || scale <= 0) continue;
+    const km = (m.speedKmh / 3600) * dt * scale;
+    m.pathDone = Math.min(m.pathKm, m.pathDone + km);
+    const t = m.pathDone / m.pathKm;
+    const prev = [m.x, m.y];
+    const nxt = pointAlong(m.path, t);
+    m.x = nxt[0];
+    m.y = nxt[1];
+    m.heading = headingOf(prev, nxt, m.heading);
+  }
+}
+
+function paintUnits() {
+  const units = $("map-units");
+  if (!units) return;
+  for (const g of units.querySelectorAll("[data-id]")) {
+    const m = motion[g.getAttribute("data-id")];
+    if (!m) continue;
+    g.setAttribute("transform", `translate(${m.x} ${m.y}) rotate(${m.heading})`);
+    const lab = g.querySelector("text");
+    if (lab) lab.setAttribute("transform", `rotate(${-m.heading})`);
+  }
+  const ring = $("map-range") && $("map-range").querySelector("circle");
+  const selectedId = state.board && state.board.map && state.board.map.selected_id;
+  const sel = selectedId ? motion[selectedId] : null;
+  if (ring && sel) {
+    ring.setAttribute("cx", String(sel.x));
+    ring.setAttribute("cy", String(sel.y));
+  }
+}
+
+function motionFrame(ts) {
+  const dt = lastFrame ? Math.min(0.05, (ts - lastFrame) / 1000) : 0;
+  lastFrame = ts;
+  stepMotion(dt);
+  paintUnits();
+  requestAnimationFrame(motionFrame);
+}
+requestAnimationFrame(motionFrame);
 
 function tone(label) {
   if (label === "Assign") return { bg: "#16352c", fg: "#b7f0d2", ring: "#3dcc8a" };
@@ -176,20 +318,24 @@ function renderMap() {
   range.replaceChildren();
   const selected = (map.vehicles || []).find((row) => row.id === map.selected_id);
   if (selected && map.px_per_km) {
+    const pose = poseOf(selected);
     const r = Math.min(260, selected.range_km * map.px_per_km);
-    range.appendChild(svg("circle", { cx: selected.x, cy: selected.y, r, class: "range-ring" }));
+    range.appendChild(svg("circle", { cx: pose.x, cy: pose.y, r, class: "range-ring" }));
   }
 
   const chargers = $("map-chargers");
   chargers.replaceChildren();
   for (const row of map.chargers || []) {
-    const g = svg("g", { class: `charger${state.charger === row.id ? " on" : ""}`, "data-id": row.id });
-    g.appendChild(svg("circle", { class: "pad", cx: row.x, cy: row.y, r: 11, fill: "#10222a", stroke: "#7ec8ff", "stroke-width": 2 }));
+    const far = row.reachable === false;
+    const g = svg("g", { class: `charger${state.charger === row.id ? " on" : ""}${far ? " far" : ""}`, "data-id": row.id });
+    g.appendChild(svg("circle", { class: "pad", cx: row.x, cy: row.y, r: 11, fill: "#10222a", stroke: far ? "#6b7c86" : "#7ec8ff", "stroke-width": 2 }));
     g.appendChild(svg("polygon", {
       points: `${row.x - 2},${row.y - 6} ${row.x + 4},${row.y - 6} ${row.x},${row.y - 1} ${row.x + 5},${row.y - 1} ${row.x - 3},${row.y + 7} ${row.x},${row.y + 1} ${row.x - 4},${row.y + 1}`,
-      fill: "#7ec8ff",
+      fill: far ? "#6b7c86" : "#7ec8ff",
     }));
-    g.appendChild(svg("text", { x: row.x + 14, y: row.y + 4, class: "map-sublabel", fill: "#9aa8b0" })).textContent = "SC";
+    const label = svg("text", { x: row.x + 14, y: row.y + 4, class: "map-sublabel", fill: "#9aa8b0" });
+    label.textContent = row.power_kw ? `${row.id} · ${row.power_kw} kW` : row.id;
+    g.appendChild(label);
     g.addEventListener("click", (event) => {
       event.stopPropagation();
       state.charger = row.id;
@@ -218,10 +364,12 @@ function renderMap() {
   const units = $("map-units");
   units.replaceChildren();
   for (const row of map.vehicles || []) {
+    const pose = poseOf(row);
     const color = row.status === "red" ? "#e24b4b" : row.status === "busy" ? "#e8a317" : "#3dcc8a";
     const g = svg("g", {
       class: `unit${row.id === map.selected_id ? " selected" : ""}${row.activity === "servicing" ? " pulse" : ""}`,
-      transform: `translate(${row.x} ${row.y}) rotate(${row.heading})`,
+      "data-id": row.id,
+      transform: `translate(${pose.x} ${pose.y}) rotate(${pose.heading})`,
     });
     g.appendChild(svg("rect", { class: "body", x: -12, y: -7, width: 24, height: 14, rx: 4, fill: color }));
     g.appendChild(svg("rect", { x: 6, y: -4, width: 8, height: 8, rx: 2, fill: "#0e1418", opacity: "0.35" }));
@@ -230,7 +378,7 @@ function renderMap() {
       y: 4,
       class: "map-label",
       fill: color,
-      transform: `rotate(${-row.heading})`,
+      transform: `rotate(${-pose.heading})`,
     });
     lab.textContent = row.id;
     g.appendChild(lab);
@@ -242,9 +390,11 @@ function renderMap() {
     units.appendChild(g);
   }
   if (map.van) {
+    const pose = poseOf(map.van);
     const g = svg("g", {
       class: "unit crew",
-      transform: `translate(${map.van.x} ${map.van.y}) rotate(${map.van.heading})`,
+      "data-id": "crew",
+      transform: `translate(${pose.x} ${pose.y}) rotate(${pose.heading})`,
     });
     g.appendChild(svg("rect", { class: "body", x: -11, y: -6, width: 22, height: 12, rx: 3, fill: "#7ec8ff" }));
     g.appendChild(svg("circle", { class: "wrench-spin", cx: 0, cy: 0, r: 3, fill: "#10222a" }));
@@ -253,7 +403,7 @@ function renderMap() {
       y: 4,
       class: "map-label",
       fill: "#7ec8ff",
-      transform: `rotate(${-map.van.heading})`,
+      transform: `rotate(${-pose.heading})`,
     });
     lab.textContent = "CREW";
     g.appendChild(lab);
@@ -545,7 +695,16 @@ document.querySelector(".speeds").addEventListener("click", async (event) => {
   const btn = event.target.closest(".speed");
   if (!btn) return;
   if (btn.id === "reset-yard") {
-    const data = await (await fetch("/api/reset", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" })).json();
+    const speed = Number((state.board && state.board.sim && state.board.sim.speed) ?? 1);
+    const data = await (
+      await fetch("/api/reset", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ speed }),
+      })
+    ).json();
+    motionGen += 1;
+    lastFrame = 0;
     state.board = data.board;
     state.ask = null;
     state.charger = null;

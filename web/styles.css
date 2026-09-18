@@ -223,6 +223,7 @@ body.night { background: #080c10; }
 .range-ring { fill: rgba(61, 204, 138, 0.08); stroke: rgba(61, 204, 138, 0.35); stroke-width: 1; }
 .charger { cursor: pointer; }
 .charger.on .pad { stroke: #e8a317; }
+.charger.far { opacity: 0.45; }
 .unit { cursor: pointer; }
 .unit.selected .body { stroke: #f3e0b0; stroke-width: 2; }
 .pulse .body {

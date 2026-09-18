@@ -17,6 +17,7 @@ ROOT = Path(__file__).resolve().parent.parent
 class WebUsesDesk(unittest.TestCase):
     def setUp(self) -> None:
         server.reset()
+        sim.set_speed(1)
 
     def test_j01_recommends_t11(self) -> None:
         board = server.board_payload("J-01")
@@ -135,7 +136,7 @@ class WebUsesDesk(unittest.TestCase):
 
     def test_oradea_warns_then_charge_restores_range(self) -> None:
         before = server.board_payload("J-02", "T-11")
-        self.assertTrue(any("Supercharger" in note or "charger" in note.lower() for note in before["warnings"]))
+        self.assertTrue(any("CS-2" in note or "charger" in note.lower() for note in before["warnings"]))
         sent = server.confirm("J-02", "T-11")
         self.assertTrue(sent["ok"])
         sim.advance(12_000)
@@ -143,10 +144,69 @@ class WebUsesDesk(unittest.TestCase):
         self.assertEqual(sim.dsp_status(parked), "free")
         self.assertLess(parked["range_km"], 40)
         before = parked["range_km"]
-        charged = server.send_charge("T-11", "sc-oradea")
+        charged = server.send_charge("T-11", "CS-2")
         self.assertTrue(charged["ok"])
         sim.advance(8_000)
         self.assertGreater(sim.vehicle("T-11")["range_km"], before)
+
+    def test_map_uses_locations_json(self) -> None:
+        board = server.board_payload("J-01")
+        ids = {row["id"] for row in board["map"]["chargers"]}
+        self.assertEqual(ids, {"G-0", "CS-1", "CS-2", "CS-3", "CS-4", "CS-5"})
+        cs2 = next(row for row in board["map"]["chargers"] if row["id"] == "CS-2")
+        self.assertEqual(cs2["power_kw"], 150)
+        self.assertTrue(cs2["reachable"])
+        cs4 = next(row for row in board["map"]["chargers"] if row["id"] == "CS-4")
+        self.assertEqual(cs4["power_kw"], 350)
+        self.assertFalse(cs4["reachable"])
+        loc = server.locations_payload()
+        self.assertEqual(loc["source"], ".docs/reference/locations.json")
+        self.assertTrue(loc["not_a_dispatch_rule"])
+        self.assertEqual(loc["garage"]["id"], "G-0")
+        blocked = server.send_charge("T-11", "CS-4")
+        self.assertFalse(blocked["ok"])
+
+    def test_reset_keeps_selected_speed(self) -> None:
+        sim.set_speed(16)
+        sim.reset()
+        self.assertEqual(sim.S["speed"], 16)
+        sim.set_speed(0)
+        server.reset()
+        self.assertEqual(sim.S["speed"], 0)
+        sim.reset(1)
+        self.assertEqual(sim.S["speed"], 1)
+        sim.set_speed(0.5)
+        sim.reset()
+        self.assertEqual(sim.S["speed"], 0.5)
+
+    def test_half_speed_is_allowed(self) -> None:
+        out = server.set_speed(0.5)
+        self.assertEqual(sim.S["speed"], 0.5)
+        self.assertEqual(out["board"]["sim"]["speed"], 0.5)
+        start = sim.S["sim_s"]
+        sim.sync_wall(10.0)
+        sim.sync_wall(10.2)
+        self.assertGreater(sim.S["sim_s"], start)
+        self.assertAlmostEqual(sim.S["sim_s"] - start, 0.2 * 0.5 * sim.SIM_PER_WALL_1X, delta=0.05)
+
+    def test_drive_follows_path_linearly(self) -> None:
+        sent = server.confirm("J-01", "T-11")
+        self.assertTrue(sent["ok"])
+        truck = sim.vehicle("T-11")
+        task = truck["queue"][0]
+        self.assertEqual(task["kind"], "drive")
+        start = (truck["x"], truck["y"])
+        sim.advance(30)
+        mid_done = truck["queue"][0]["done"]
+        expected = (sim.CRUISE_KMH / 3600.0) * 30
+        self.assertAlmostEqual(mid_done, expected, delta=0.05)
+        self.assertLess(mid_done, task["km"] * 0.5)
+        mid = (truck["x"], truck["y"])
+        self.assertGreater(sim._hypot(start, mid), 0.5)
+        pub = sim.public_vehicle("T-11")
+        self.assertGreater(pub["speed_kmh"], 0)
+        self.assertGreater(len(pub["path"]), 1)
+        self.assertAlmostEqual(pub["path_done"], mid_done, delta=0.05)
 
     def test_kit_files_unchanged(self) -> None:
         kit = ROOT / "instructions"

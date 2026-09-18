@@ -23,17 +23,24 @@ import sim  # noqa: E402
 
 DISPLAY_FILE = WEB / "display.json"
 LOG_FILE = ROOT / "dispatch.log"
+LOCATIONS_FILE = ROOT / ".docs" / "reference" / "locations.json"
 
 STATE: dict = {"log": []}
 
 
-def reset() -> None:
-    sim.reset()
+def reset(speed: float | None = None) -> None:
+    sim.reset(speed)
     STATE["log"] = []
 
 
 def load_display() -> dict:
     return json.loads(DISPLAY_FILE.read_text(encoding="utf-8"))
+
+
+def locations_payload() -> dict:
+    data = json.loads(LOCATIONS_FILE.read_text(encoding="utf-8"))
+    data["source"] = ".docs/reference/locations.json"
+    return data
 
 
 def busy_ids() -> set[str]:
@@ -175,6 +182,7 @@ def board_payload(job_id: str | None = None, vehicle_id: str | None = None) -> d
         "events": sim.S["events"],
         "sim": sim.sim_payload(),
         "map": sim.map_payload(selected_vehicle),
+        "locations": locations_payload(),
         "can_send": can_send,
         "can_undo": sim.can_undo(),
         "who_clicks": display.get("dispatcher"),
@@ -286,8 +294,8 @@ def send_return(vehicle_id: str) -> dict:
     return {"ok": True, "sent": entry, "board": board_payload(None, vehicle_id)}
 
 
-def set_speed(speed: int) -> dict:
-    sim.set_speed(int(speed))
+def set_speed(speed: float) -> dict:
+    sim.set_speed(speed)
     return {"ok": True, "board": board_payload()}
 
 
@@ -379,6 +387,9 @@ class DeskHandler(BaseHTTPRequestHandler):
             vehicle_id = (query.get("vehicle") or [None])[0]
             self._json(200, board_payload(job_id, vehicle_id))
             return
+        if path == "/api/locations":
+            self._json(200, locations_payload())
+            return
         if path == "/":
             path = "/index.html"
         rel = Path(path.lstrip("/"))
@@ -416,10 +427,11 @@ class DeskHandler(BaseHTTPRequestHandler):
             return
         if parsed.path == "/api/speed":
             raw_speed = body.get("speed")
-            self._json(200, set_speed(4 if raw_speed is None else int(raw_speed)))
+            self._json(200, set_speed(sim.DEFAULT_SPEED if raw_speed is None else raw_speed))
             return
         if parsed.path == "/api/reset":
-            reset()
+            raw_speed = body.get("speed")
+            reset(None if raw_speed is None else raw_speed)
             self._json(200, {"ok": True, "board": board_payload()})
             return
         if parsed.path == "/api/ask":
