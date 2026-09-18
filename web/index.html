@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Northbound · Dispatch desk</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <span class="mark" id="mark">NB</span>
+      <div>
+        <p class="org" id="org">Northbound</p>
+        <p class="desk-title" id="desk">Dispatch desk · job assignment</p>
+      </div>
+    </div>
+    <div class="top-meta">
+      <span>Yard <span id="yard">Cluj</span></span>
+      <span>Shift <span id="shift">Day</span></span>
+      <span>Dispatcher <span id="dispatcher">A. Pop</span></span>
+      <span class="live-tag">Confirm required</span>
+    </div>
+  </header>
+
+  <div class="shell">
+    <aside class="queue">
+      <div class="queue-head">
+        <div>
+          <p class="kicker">Queue</p>
+          <p class="queue-title">Jobs</p>
+        </div>
+        <p class="count"><span id="job-count">2</span> open</p>
+      </div>
+      <ul id="job-list"></ul>
+      <div class="queue-head roster-head">
+        <div>
+          <p class="kicker">Roster</p>
+          <p class="queue-title">Vehicles</p>
+        </div>
+        <p class="count"><span id="vehicle-count">3</span></p>
+      </div>
+      <ul id="vehicle-list"></ul>
+    </aside>
+
+    <section class="case">
+      <div class="case-head">
+        <div>
+          <p class="mono muted" id="case-id">J-01</p>
+          <h1 id="case-name">Cluj</h1>
+          <p class="sub" id="case-sub"></p>
+        </div>
+        <div class="decision-card" id="decision-card">
+          <p class="kicker tight">Recommendation</p>
+          <p class="decision" id="case-decision"></p>
+          <p class="mono small" id="case-rule"></p>
+        </div>
+      </div>
+
+      <div class="board">
+        <div class="card map-card">
+          <p class="kicker">Schematic · kit cities only</p>
+          <svg class="map" viewBox="0 0 420 180" role="img" aria-label="Cluj and Oradea">
+            <text x="24" y="28" class="map-label">Oradea · J-02 160 km</text>
+            <text x="250" y="28" class="map-label">Cluj yard · J-01 40 km</text>
+            <circle id="city-oradea" cx="70" cy="96" r="10" class="city"></circle>
+            <circle id="city-cluj" cx="300" cy="96" r="10" class="city on"></circle>
+            <path d="M80 96 H290" class="road"></path>
+            <g id="truck-dots"></g>
+          </svg>
+          <ul class="checks" id="gates"></ul>
+        </div>
+
+        <div class="card action-card">
+          <p class="kicker">If this went live</p>
+          <p class="live-copy">Dispatcher <strong id="who-clicks">A. Pop</strong> must click before it sends. Undo last send if the click was wrong. Log writes time, job, vehicle, decision, rule, quote.</p>
+          <div class="actions">
+            <button type="button" id="confirm-btn" class="primary">Confirm send</button>
+            <button type="button" id="undo-btn" class="ghost">Undo last send</button>
+          </div>
+          <p class="hint" id="action-hint">A recommendation is not a send.</p>
+          <div class="quote" id="quote-box">
+            <p class="kicker" id="quote-from"></p>
+            <p id="quote"></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="split">
+        <div class="card">
+          <p class="kicker">Audit log</p>
+          <ul class="log" id="log-list">
+            <li class="empty">No sends yet.</li>
+          </ul>
+        </div>
+        <div class="ask">
+          <p class="kicker gold">Ask the desk</p>
+          <p class="ask-hint">The desk only assigns jobs from the roster. It will not give medical, legal, or payment advice.</p>
+          <form id="ask-form">
+            <input id="ask-input" type="text" placeholder="What should we pay the driver?" autocomplete="off">
+            <button type="submit">Send to desk</button>
+          </form>
+          <div id="ask-result" hidden></div>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script src="/app.js"></script>
+</body>
+</html>
