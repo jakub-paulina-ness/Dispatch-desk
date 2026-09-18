@@ -129,26 +129,26 @@ Requirement IDs are the contract. Every ID maps to a component and to test or de
 
 | ID | Requirement | Source | Owner |
 |---|---|---|---|
-| **FR-1** | Load roster only from `instructions/vehicles.json`. Fields used: `id`, `status`, `hours_ok`, `range_km`. | Kit, DSP-4 | Ondrej |
-| **FR-2** | Load queue only from `instructions/jobs.json`. Fields used: `id`, `city`, `km`. | Kit | Ondrej |
-| **FR-3** | Process jobs in JSON order. CLI with no args = all jobs; CLI with one id = that job only. | TEAM.md | Ondrej |
-| **FR-4** | Evaluate vehicles in JSON order (T-11, T-12, T-14). First eligible vehicle is assigned (first-fit). | 02-rozhodnutie.png | Jakub / Ondrej |
-| **FR-5 DSP-1** | Eligible only if `status == "free"` **and** `hours_ok is True`. Otherwise skip (do not assign). | `dispatch_rules.md` | Ondrej |
-| **FR-6 DSP-2** | Eligible only if `job.km < vehicle.range_km` (strict less-than). | `dispatch_rules.md` | Ondrej |
-| **FR-7 DSP-3** | If `status == "red"`, refuse that vehicle. Do not assign. Cite DSP-3. Short-circuit: do not cite DSP-1/DSP-2 for a red vehicle even if those would also fail. | `dispatch_rules.md`, 02-rozhodnutie.png, Hotovo B | Ondrej |
-| **FR-8 DSP-4** | Never construct a vehicle id that is not in `vehicles.json`. CLI unknown job id → error, not an invented job. | `dispatch_rules.md` | Ondrej |
-| **FR-9** | J-01 (Cluj, 40 km) → ASSIGN T-11. | Decision table | Ondrej / Marek |
-| **FR-10** | J-02 (Oradea, 160 km) → ASSIGN T-11. | Decision table | Ondrej / Marek |
+| **FR-1** | Load roster only from `instructions/vehicles.json`. Fields used: `id`, `status`, `hours_ok`, `range_km`. | Kit, DSP-4 | Peťo |
+| **FR-2** | Load queue only from `instructions/jobs.json`. Fields used: `id`, `city`, `km`. | Kit | Peťo |
+| **FR-3** | Process jobs in JSON order. CLI with no args = all jobs; CLI with one id = that job only. | TEAM.md | Peťo |
+| **FR-4** | Evaluate vehicles in JSON order (T-11, T-12, T-14). First eligible vehicle is assigned (first-fit). | 02-rozhodnutie.png | Jakub / Peťo |
+| **FR-5 DSP-1** | Eligible only if `status == "free"` **and** `hours_ok is True`. Otherwise skip (do not assign). | `dispatch_rules.md` | Peťo |
+| **FR-6 DSP-2** | Eligible only if `job.km < vehicle.range_km` (strict less-than). | `dispatch_rules.md` | Peťo |
+| **FR-7 DSP-3** | If `status == "red"`, refuse that vehicle. Do not assign. Cite DSP-3. Short-circuit: do not cite DSP-1/DSP-2 for a red vehicle even if those would also fail. | `dispatch_rules.md`, 02-rozhodnutie.png, Hotovo B | Peťo |
+| **FR-8 DSP-4** | Never construct a vehicle id that is not in `vehicles.json`. CLI unknown job id → error, not an invented job. | `dispatch_rules.md` | Peťo |
+| **FR-9** | J-01 (Cluj, 40 km) → ASSIGN T-11. | Decision table | Peťo / Marek |
+| **FR-10** | J-02 (Oradea, 160 km) → ASSIGN T-11. | Decision table | Peťo / Marek |
 | **FR-11** | T-12 is never ASSIGN. Skip with DSP-1 (busy). | Decision table | Marek |
 | **FR-12** | T-14 is never ASSIGN, for J-01 and for J-02. Always REFUSE with DSP-3. | Hotovo B, TEAM.md | Marek |
-| **FR-13** | ASSIGN T-11 cites DSP-1 and DSP-2, in that order. | 02-rozhodnutie.png | Ondrej |
-| **FR-14** | Every quoted line is the exact `lookup_rule` hit, obtained by importing `handle` from `instructions/rules_mcp.py` and calling `method="tools/call"`, `name="lookup_rule"`. | TEAM.md, rules_mcp.py | Jakub sign-off / Ondrej |
-| **FR-15** | Stdout is human-readable for the demo and parseable for tests (contract in § API). | TEAM.md | Ondrej / Marek |
-| **FR-16** | Re-runnable: `python dispatch.py` and `python dispatch.py J-01`. | Must-show 7 | Ondrej |
-| **FR-17** | MCP tools `list_rules` and `lookup_rule` available to Grok as `rules__list_rules` / `rules__lookup_rule`. | Must-show 6, MCP naming | Marian |
-| **FR-18** | PreToolUse hook denies writes to `dispatch_rules.md` and `*_rules.md`. | TEAM.md, Peťo spec | Peťo / Marian |
+| **FR-13** | ASSIGN T-11 cites DSP-1 and DSP-2, in that order. | 02-rozhodnutie.png | Peťo |
+| **FR-14** | Every quoted line is the exact `lookup_rule` hit, obtained by importing `handle` from `instructions/rules_mcp.py` and calling `method="tools/call"`, `name="lookup_rule"`. | TEAM.md, rules_mcp.py | Jakub sign-off / Peťo |
+| **FR-15** | Stdout is human-readable for the demo and parseable for tests (contract in § API). | TEAM.md | Peťo / Marek |
+| **FR-16** | Re-runnable: `python dispatch.py` and `python dispatch.py J-01`. | Must-show 7 | Peťo |
+| **FR-17** | MCP tools `list_rules` and `lookup_rule` available to Grok as `rules__list_rules` / `rules__lookup_rule`. | Must-show 6, MCP naming | Jakub |
+| **FR-18** | PreToolUse hook denies writes to `dispatch_rules.md` and `*_rules.md`. | TEAM.md, Peťo spec | Peťo spec / Jakub impl |
 | **FR-19** | Optional thin HTTP wrapper `src/dispatch_server.py` calling the same engine. If it dies, demo continues on the CLI. | TEAM.md | Marian |
-| **FR-20** | `python pipelines/show_lab.py` prints the must-show paths. `.ps1` / `.sh` wrappers are optional and **not** the spoken demo command. | TEAM.md | Marian / Peťo |
+| **FR-20** | `python pipelines/show_lab.py` prints the must-show paths. `.ps1` / `.sh` wrappers are optional and **not** the spoken demo command. | TEAM.md | Jakub / Peťo |
 
 ### Non-functional requirements
 
@@ -191,10 +191,10 @@ Mapped from `.docs/reference/03-ukaz.png` and the workshop brief. Evidence is wh
 | **MS-1** | inspect | Open empty-ish folder, list `instructions/` four kit files **before** claiming we wrote them. `show_lab.py` reprints the list. Session history / this plan records inspect-first. | Peťo |
 | **MS-2** | AGENTS.md | Repo-root `AGENTS.md` exists; `grok inspect` lists it as a project instruction. Short: inspect first, only `dispatch_rules.md`, no invented vehicles, refuse red, quotes via lookup_rule, `python` not `python3`. | Jakub |
 | **MS-3** | plan | This document + Grok `/plan` approval. Do not start implementation files before sign-off. | Jakub |
-| **MS-4** | skill | **Both** `.grok/skills/dispatch-desk/SKILL.md` **and** `.grok/plugins/dispatch-desk/skills/dispatch-desk/SKILL.md`. YAML frontmatter `name` + `description`. Steps: inspect → lookup_rule → `python dispatch.py` → cite DSP. Project skill covers the 3-minute demo if the plugin is off/untrusted. | Marian (Jakub drafts) |
-| **MS-5** | hook | **Both** `.grok/hooks/` **and** plugin `hooks/`. PreToolUse JSON + Python checker. Deny writes to `dispatch_rules.md` and `*_rules.md` via basename on `file_path`/`path`/`target_file`/`old_string`. `/hooks` shows it loaded. Live: ask Grok to `search_replace` or `write` the rule file; it is denied. | Peťo spec / Marian impl |
-| **MS-6** | MCP lookup_rule | `grok mcp list` shows `rules (project)`. Grok calls `rules__lookup_rule` with query `DSP-3` and gets the kit line. | Marian |
-| **MS-7** | script | `python dispatch.py` assigns J-01 and J-02 to T-11 with quotes. | Ondrej |
+| **MS-4** | skill | **Both** `.grok/skills/dispatch-desk/SKILL.md` **and** `.grok/plugins/dispatch-desk/skills/dispatch-desk/SKILL.md`. YAML frontmatter `name` + `description`. Steps: inspect → lookup_rule → `python dispatch.py` → cite DSP. Project skill covers the 3-minute demo if the plugin is off/untrusted. | Jakub |
+| **MS-5** | hook | **Both** `.grok/hooks/` **and** plugin `hooks/`. PreToolUse JSON + Python checker. Deny writes to `dispatch_rules.md` and `*_rules.md` via basename on `file_path`/`path`/`target_file`/`old_string`. `/hooks` shows it loaded. Live: ask Grok to `search_replace` or `write` the rule file; it is denied. | Peťo spec / Jakub impl |
+| **MS-6** | MCP lookup_rule | `grok mcp list` shows `rules (project)`. Grok calls `rules__lookup_rule` with query `DSP-3` and gets the kit line. | Jakub |
+| **MS-7** | script | `python dispatch.py` assigns J-01 and J-02 to T-11 with quotes. | Peťo |
 | **MS-8** | test T-14 stays refused | `python -m unittest test_dispatch -v` — fail if T-14 is ever ASSIGN. | Marek |
 
 **Hotovo (done when):**
@@ -285,7 +285,7 @@ flowchart LR
     MCP["rules_mcp.py\nlist_rules / lookup_rule\nhandle(req) -> dict"]
   end
 
-  subgraph Engine["src/  — Ondrej"]
+  subgraph Engine["src/  — Peťo"]
     D["dispatch.py\nfirst-fit DSP-3→1→2"]
     SHIM["../dispatch.py shim"]
   end
@@ -335,7 +335,7 @@ They must not drift: both call the same module against the same `dispatch_rules.
 ```
 DispatchProject/
   AGENTS.md                          # Jakub — after sign-off
-  dispatch.py                        # Ondrej — 5-line shim
+  dispatch.py                        # Peťo — 5-line shim
   test_dispatch.py                   # Marek — shim: from tests.test_dispatch import *
   instructions/                      # KIT — do not edit
     dispatch_rules.md
@@ -343,13 +343,13 @@ DispatchProject/
     vehicles.json
     rules_mcp.py
   src/
-    dispatch.py                      # Ondrej — engine + CLI main()
+    dispatch.py                      # Peťo — engine + CLI main()
     dispatch_server.py               # Marian — OPTIONAL, after CLI is green
   tests/
     __init__.py                      # empty
     test_dispatch.py                 # Marek
   pipelines/
-    show_lab.py                      # Marian — spoken demo command
+    show_lab.py                      # Jakub — spoken demo command
     show_lab.ps1                     # optional; do not type in demo
     show_lab.sh                      # optional POSIX alias
   .grok/
@@ -528,7 +528,7 @@ Repo-root, short. Loaded when the folder is trusted (user-guide 12). Suggested b
 - Engine: `src/dispatch.py`. Demo: `python dispatch.py`.
 - Do not copy workshop HTML.
 
-#### Skill (Marian; Jakub drafts the steps)
+#### Skill (Jakub, S-05)
 
 Ship the **same** `SKILL.md` in both places (KD-10 / TEAM.md):
 
@@ -559,7 +559,7 @@ Body steps (concrete):
 
 Project skills in untrusted folders are skipped (user-guide 08). Demo machine must trust the folder.
 
-#### Hook (Peťo specs, Marian implements)
+#### Hook (Peťo specs, Jakub implements)
 
 Ship **twice** (KD-10): project `.grok/hooks/` (MS-5 if plugin off) and plugin `hooks/`. Same `protect_rules.py` body.
 
@@ -619,7 +619,7 @@ Matcher includes `write` (Grok Build `write` tool, `file_path`) as well as alias
 
 Trust: project/plugin hooks are skipped until `/hooks-trust` or `grok --trust`. Peťo's live check: `search_replace` or `write` on `instructions/dispatch_rules.md` is denied.
 
-Non-blocking fixture: `tests/test_protect_rules.py` (or a method in `test_dispatch.py`) pipes synthetic PreToolUse JSON for `search_replace`, `write`, and `run_terminal_command` into `protect_rules.py` and asserts deny JSON on stdout for the first two; `run_terminal_command` with `Get-Content instructions/dispatch_rules.md` must **allow** (we do not parse `command`). Owner: Marian with Marek; can land in PR-5.
+Non-blocking fixture: `tests/test_protect_rules.py` (or a method in `test_dispatch.py`) pipes synthetic PreToolUse JSON for `search_replace`, `write`, and `run_terminal_command` into `protect_rules.py` and asserts deny JSON on stdout for the first two; `run_terminal_command` with `Get-Content instructions/dispatch_rules.md` must **allow** (we do not parse `command`). Owner: Jakub with Marek; can land in PR-5.
 
 Do not over-scope the hook to `vehicles.json` / `jobs.json` / `rules_mcp.py` unless time remains — TEAM.md names rule files only. AGENTS.md still forbids editing the rest of the kit.
 
@@ -1086,11 +1086,11 @@ After PR-0 approval, **start together** (no start-gate between owners):
 
 | Owner | Builds | Done when |
 |---|---|---|
-| Jakub | `AGENTS.md`; skill draft text; quote sign-off | `grok inspect` shows AGENTS.md |
-| Ondrej | `src/dispatch.py` + root shim | `python dispatch.py` matches stdout contract |
+| Jakub | `AGENTS.md`; S-05 skill+hook+plugin+`show_lab.py`; MCP doctor; quote sign-off | `grok inspect` shows AGENTS.md + skill/hook; `grok mcp list` shows `rules` |
+| Peťo | `src/dispatch.py` + root shim (S-02) | `python dispatch.py` matches stdout contract |
 | Marek | `tests/test_dispatch.py` + root shim (against this contract) | `python -m unittest test_dispatch -v` green once PR-2 exists |
 | Peťo | must-show checklist + 3-min runbook in `pipelines/DEMO.md` (hook spec is **this document**) | DEMO.md exists |
-| Marian | project skill+hook, plugin skill+hook, `show_lab.py`, MCP doctor. **Depends on this document, not PR-4.** | `grok inspect` shows skill/hook; `grok mcp list` shows `rules` |
+| Marian | S-12 driver, optional server, drive demo | Telemetry / UI; CLI fallback |
 
 ### Stage 3 — Integration (Marian) — **runbook, not a git PR**
 
@@ -1115,10 +1115,11 @@ Time the 3–4 min script. If over, cut the optional UI first.
 ### Stage 5 — Live (roles from TEAM.md)
 
 1. **Peťo** — `python pipelines/show_lab.py` and/or `grok inspect`
-2. **Ondrej** — `python dispatch.py` (J-01/J-02 → T-11 + quotes)
+2. **Peťo** — `python dispatch.py` (J-01/J-02 → T-11 + quotes)
 3. **Marek** — `python -m unittest test_dispatch -v` (T-14 refused)
-4. **Marian** — `rules__lookup_rule` + plugin / optional UI
-5. **Jakub** — one sentence: the decision is from `dispatch_rules.md` via `lookup_rule`, not from the model
+4. **Jakub** — `rules__lookup_rule` + skill/hook/plugin
+5. **Marian** — optional UI / driver
+6. **Jakub** — one sentence: the decision is from `dispatch_rules.md` via `lookup_rule`, not from the model
 
 ### Rollback
 
@@ -1144,7 +1145,7 @@ There is no production. Rollback = git revert of the last PR, fall back to `pyth
 | **R-12** | lookup query `red` vs `DSP-3` accidentally hits multiple lines later | **Low** | Query by id only |
 | **R-13** | Someone edits kit "just to add a comment" | **High** | Hook + AGENTS.md + `git diff --ignore-cr-at-eol -- instructions/` (NFR-7) |
 | **R-14** | show_lab.sh / .ps1 unrunnable on this PowerShell | **Med** | Spoken command is `python pipelines/show_lab.py` only (KD-13) |
-| **R-15** | Time overrun (Marian's backlog is large) | **Med** | **Cut order:** CLI + test + project MCP + AGENTS.md + skill + hook; plugin pack next; UI last. Cut UI without guilt. PR-5 does not wait on PR-4. |
+| **R-15** | Time overrun (Jakub S-05 + Marian UI) | **Med** | **Cut order:** CLI + test + project MCP + AGENTS.md + skill + hook; plugin pack next; UI last. Cut UI without guilt. PR-5 does not wait on PR-4. |
 | **R-16** | Grok assigns in chat instead of running the script | **Med** | Skill step 3 is `python dispatch.py`; Jakub's demo line |
 
 ---
@@ -1157,7 +1158,7 @@ Remaining optional/stretch items — they do **not** block engine work:
 
 | ID | Question | Default if no objection | Who decides |
 |---|---|---|---|
-| **Q-2** | Dedicated `python dispatch.py --vehicle T-14` for isolated refuse? | No. Every job block already REFUSE T-14. | Ondrej |
+| **Q-2** | Dedicated `python dispatch.py --vehicle T-14` for isolated refuse? | No. Every job block already REFUSE T-14. | Peťo |
 | **Q-3** | Demo DSP-4 with a fake T-15 CLI flag? | No for v1. DSP-4 is enforced by iteration universe. Optional stretch. | Team |
 | **Q-6** | Where to put Peťo's checklist — `.docs/plans/` vs `pipelines/DEMO.md`? | `pipelines/DEMO.md` (runbook next to show_lab; Stage 3 lives there). | Peťo |
 
@@ -1198,9 +1199,10 @@ Remaining optional/stretch items — they do **not** block engine work:
 Peťo speaks the checklist; Marian drives; others run their one command.
 
 | 0:00 | Peťo | `python pipelines/show_lab.py` then `grok inspect` — eight must-show paths |
-| 0:40 | Ondrej | `python dispatch.py` — ASSIGN T-11, REFUSE T-14, quotes |
+| 0:40 | Peťo | `python dispatch.py` — ASSIGN T-11, REFUSE T-14, quotes |
 | 1:20 | Marek | `python -m unittest test_dispatch -v` — T-14 refused |
-| 2:00 | Marian | Grok: `lookup_rule` DSP-3; point at plugin / hook; optional UI |
+| 2:00 | Jakub | Grok: `lookup_rule` DSP-3; point at plugin / hook |
+| 2:20 | Marian | Optional UI / driver (skip if dead) |
 | 2:40 | Jakub | "The decision is `dispatch_rules.md` through `lookup_rule`, not the model." |
 | 3:00 | Buffer | Re-run script if anyone blinks. If UI dead, skip it. |
 
@@ -1287,13 +1289,11 @@ if __name__ == "__main__":
 
 | Owner | Role | Delivers | Blocked on |
 |---|---|---|---|
-| **Jakub** | Architect | This plan, `AGENTS.md`, DSP-1→4 order, sign-off that quotes come from `lookup_rule` | Team approval of this doc |
-| **Ondrej** | Dev | `src/dispatch.py`, root `dispatch.py`, stdout contract | Plan approval |
+| **Jakub** | Architect + Grok stack | This plan, `AGENTS.md`, S-05 skill/hook/plugin/`show_lab.py`/MCP, DSP-1→4 order, sign-off that quotes come from `lookup_rule` | Team approval of this doc |
+| **Ondrej** | — | Unassigned from S-02 | — |
 | **Marek** | QA auto | `tests/test_dispatch.py`, root `test_dispatch.py` | Stdout contract (this doc); merge after engine exists |
-| **Peťo** | QA acceptance | Must-show checklist, 3-min runbook (`pipelines/DEMO.md`); hook **spec** is this document | Plan approval |
-| **Marian** | Integration + live demo | Project+plugin skill/hook, MCP doctor, `show_lab.py`, optional server, drive demo | **This document** (skill steps + hook contract). Not blocked on PR-4. CLI+tests wire in Stage 3. |
-
-Marian is not optional. Without him there is no plugin, no trusted MCP on the laptop, and no jury-facing inspect.
+| **Peťo** | Engine + QA acceptance | `src/dispatch.py`, root shim, stdout contract (S-02); must-show checklist, 3-min runbook (`pipelines/DEMO.md`); hook **spec** is this document | Plan approval |
+| **Marian** | Integration + live demo | S-12 driver, optional server, drive demo | S-02 for live JSON; CLI fallback |
 
 ---
 
@@ -1342,13 +1342,13 @@ Incremental, independently reviewable PRs. No PR edits kit files. No PR starts b
 - **Owner:** Jakub
 - **Start gate:** PR-0. Does not block PR-2.
 
-### PR-2 — Dispatch engine (Ondrej)
+### PR-2 — Dispatch engine (Peťo)
 
 - **Title:** `feat: deterministic dispatch.py first-fit DSP-3→1→2`
 - **Files:** `src/dispatch.py`, `dispatch.py` (shim)
 - **Depends on:** PR-0 (stdout contract + KD-1..17) — **not** PR-1
 - **Changes:** Load kit from `instructions/` via `load_vehicles` / `load_jobs`. Import `handle` from `instructions/rules_mcp.py`. CLI `python dispatch.py` / `python dispatch.py J-01` / `--help`. Stdout contract. J-01/J-02 → T-11. T-14 REFUSE + DSP-3 quote. First-fit only in `dispatch_job`. No hardcoded DSP sentences. No roster mutation.
-- **Owner:** Ondrej
+- **Owner:** Peťo
 
 ### PR-3 — Automated tests (Marek)
 
@@ -1366,21 +1366,21 @@ Incremental, independently reviewable PRs. No PR edits kit files. No PR starts b
 - **Changes:** Checklist MS-1..8 and Hotovo A/B/C. Spoken demo script with timestamps. Stage 3 laptop wiring (`grok mcp doctor` / do-not-re-add / trust / plugin enable / pin python.exe). Windows commands only (`python pipelines/show_lab.py`, `python dispatch.py`). Hook **implementation spec is this architecture**, not this PR.
 - **Owner:** Peťo
 
-### PR-5 — Skill + hook + plugin pack (Marian)
+### PR-5 — Skill + hook + plugin pack (Jakub)
 
 - **Title:** `feat: dispatch-desk skill, protect-rules hook, plugin pack`
 - **Files:** `.grok/skills/dispatch-desk/SKILL.md`, `.grok/hooks/protect-rules.json`, `.grok/hooks/protect_rules.py`, `.grok/plugins/dispatch-desk/**` (`plugin.json`, skill, hooks — **no** `.mcp.json`)
-- **Depends on:** **this document** (skill steps + hook contract). Not PR-4. MCP project config already exists — do not regress it to `python3`. Skill prose may land as Jakub's draft in-tree; Marian can copy it.
+- **Depends on:** **this document** (skill steps + hook contract). Not PR-4. MCP project config already exists — do not regress it to `python3`.
 - **Changes:** Project + plugin skill and hook. Hook command uses `${GROK_PLUGIN_ROOT}` / `${GROK_WORKSPACE_ROOT}`. Matcher includes `write`. Basename deny. Optional T-HOOK-FIXTURE.
-- **Owner:** Marian (skill prose from Jakub)
+- **Owner:** Jakub
 
-### PR-6 — Demo tooling (Marian)
+### PR-6 — Demo tooling (Jakub)
 
 - **Title:** `feat: show_lab must-show printer`
 - **Files:** `pipelines/show_lab.py` (optional `show_lab.ps1` / `show_lab.sh` — not spoken)
 - **Depends on:** PR-0 (frozen paths). Not PR-5.
 - **Changes:** Print the eight must-show locations and the correct Windows commands, even if some files are not created yet.
-- **Owner:** Marian
+- **Owner:** Jakub
 
 Laptop wiring (formerly PR-7) is **not a git PR**. Fold into `pipelines/DEMO.md` Stage 3. The only possible committed file is a last-resort pinned `python.exe` in `.grok/config.toml`; do not put `/hooks-trust` or `grok plugin enable` in git.
 
@@ -1393,4 +1393,4 @@ Laptop wiring (formerly PR-7) is **not a git PR**. Fold into `pipelines/DEMO.md`
 - **Owner:** Marian
 - **Cut if:** dry-run exceeds 4 minutes or server is flaky
 
-Merge preference (not a start gate): PR-0, then PR-1..PR-6 as they finish, PR-8 last. Do not wait for a linear `PR-1 → PR-2 → PR-3 → PR-5` chain before Marian starts.
+Merge preference (not a start gate): PR-0, then PR-1..PR-6 as they finish, PR-8 last. Do not wait for a linear `PR-1 → PR-2 → PR-3 → PR-5` chain before Jakub starts S-05.

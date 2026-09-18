@@ -50,7 +50,7 @@ Demo clock: compress so J-02 drive + CS-2 charge is visible in < 45 s.
 
 ## Parallel
 
-S-05 Grok stack is your Layer A story and comes first if the clock is tight. This sim is the 60-second wow, not the must-show.
+S-05 Grok stack is **Jakub’s**. This sim is your wow story; it is not the must-show. Do not block on skill/hook/plugin.
 
 ## Out of scope
 

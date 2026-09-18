@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| **Owner** | Ondrej |
+| **Owner** | Peťo |
 | **Layer** | A — graded (must-show 7) |
 | **Status** | ready |
 | **Blocked on** | Architecture sign-off / [S-00](S-00-contracts.md). **Not** blocked on S-01, S-03, or UI. |
@@ -11,6 +11,8 @@
 ## Goal
 
 As the dispatch developer, I want a deterministic script that assigns J-01 and J-02 to T-11 and refuses T-14 with DSP-3 quoted from `handle()`.
+
+S-11 is a separate story (event loop + start driver) on top of this file. Do not put DSP-1…4 into `src/dispatcher.py`.
 
 ## Files
 
@@ -48,4 +50,4 @@ Same block for J-02. `python dispatch.py` and `python dispatch.py J-01`. Unknown
 
 ## Out of scope
 
-HTML. Charging. Tests (Marek). Skill/hook. HTTP server.
+HTML. Charging. Tests (Marek). Skill/hook. HTTP server. S-11 event loop (`src/dispatcher.py`) — that is still a separate story.

@@ -26,7 +26,7 @@ This is the file you implement against. Do not wait for someone else's PR if you
 
 Evaluation order: **DSP-3 → DSP-1 → DSP-2**. First-fit in `vehicles.json` order. Full stdout grammar: `.docs/specification/architecture.md` § API.
 
-Engine importable names (Ondrej): `load_vehicles`, `load_jobs`, `lookup_rule`, `evaluate_vehicle`, `dispatch_job`, `format_job_block`, `main`.
+Engine importable names (Peťo, S-02): `load_vehicles`, `load_jobs`, `lookup_rule`, `evaluate_vehicle`, `dispatch_job`, `format_job_block`, `main`.
 
 ## DispatchEvent (S-11 → S-10 and S-12)
 

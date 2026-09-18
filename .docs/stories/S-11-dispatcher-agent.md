@@ -12,7 +12,7 @@
 
 As the dispatcher, I want an agent loop that follows DSP-1…DSP-4 and **starts a driver only for ASSIGN**.
 
-This is orchestration on top of Ondrej's engine, not a second assignment algorithm.
+This is orchestration on top of the **S-02** engine (`src/dispatch.py`, also Peťo), not a second assignment algorithm. S-11 must **call** `dispatch_job`, not copy DSP-1…4.
 
 ## Files
 
@@ -45,7 +45,7 @@ for job in jobs:
 
 ## Parallel
 
-S-04 runbook is your Layer A story. Dispatcher can be a thin loop; do not block the checklist on process spawning.
+Layer A for you is **S-02** (engine pair) then S-04 (runbook). S-11 stays a thin loop on top of `dispatch_job`. Do not block the checklist on process spawning.
 
 ## Out of scope
 

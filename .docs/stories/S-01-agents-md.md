@@ -25,4 +25,4 @@ As the architect, I want a short repo-root `AGENTS.md` so Grok inspects the kit 
 
 ## Out of scope
 
-Skill body (draft bullets may live here, Marian copies into S-05). Hook. Engine.
+Skill/hook/plugin (that is S-05, also yours). Engine.

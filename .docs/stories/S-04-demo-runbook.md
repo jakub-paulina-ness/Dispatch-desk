@@ -5,7 +5,7 @@
 | **Owner** | Peťo |
 | **Layer** | A — graded |
 | **Status** | ready |
-| **Blocked on** | Architecture / [S-00](S-00-contracts.md). Hook **implementation** is Marian (S-05); you spec it (already in architecture). |
+| **Blocked on** | Architecture / [S-00](S-00-contracts.md). Hook **implementation** is Jakub (S-05); you spec it (already in architecture). |
 | **Unblocks** | Dry-run clock; live demo speaking order |
 
 ## Goal
@@ -31,4 +31,4 @@ S-11 dispatcher is your second story. Runbook can be written without any engine.
 
 ## Out of scope
 
-Implementing `protect_rules.py` (S-05). Driving Grok in the jury slot (Marian).
+Implementing `protect_rules.py` (S-05, Jakub). Driving the desk/UI in the jury slot (Marian).

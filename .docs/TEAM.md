@@ -9,13 +9,11 @@ Jedna vec na stôl. Žiadny vymyslený rule file. Živý demo, nie slajdy.
 
 | Kto | Rola | Vlastní (hotové, keď…) | Odhad |
 |---|---|---|---|
-| **Jakub** | architekt | `/plan` schválený, `AGENTS.md`, rozhodovací poriadok DSP-1→4, sign-off že citáty idú z `lookup_rule` | stred |
-| **Ondrej** | dev | `dispatch.py` — priradí J-01/J-02 na T-11, T-14 refuse + citát DSP-3 | stred |
-| **Marian** | integrácia + demo | plugin (skill+hook+MCP), `grok mcp add`, live desk, `show_lab.sh`, beh dema pred porotou | **veľa** |
+| **Jakub** | architekt + Grok stack | `/plan`, `AGENTS.md`, S-05 skill/hook/plugin/MCP/`show_lab.py`, sign-off že citáty idú z `lookup_rule` | **veľa** |
+| **Ondrej** | — | Unassigned from S-02 | — |
+| **Marian** | integrácia + demo | S-12 driver, S-14 thin server, live desk, beh dema pred porotou | stred |
 | **Marek** | QA automat | `test_dispatch.py` — T-14 stays refused, T-11 assigned, quote je riadok z `dispatch_rules.md` | stred |
-| **Peťo** | QA acceptance | checklist must-show, manuálny beh, hook naozaj blokuje zmenu rules, runbook dema | stred |
-
-Marian nie je „pomocník“. Bez neho nie je plugin, MCP na laptope, stránka/script naživo ani zoznam pre porotu.
+| **Peťo** | engine + QA acceptance | S-02 `dispatch.py`; checklist must-show, hook spec, runbook dema; S-11 event loop | **veľa** |
 
 ## Parallel stories
 
@@ -46,14 +44,14 @@ Plán musí povedať:
 
 ### 2. Paralelne po pláne
 
-**Jakub**
+**Jakub (S-01 + S-05)**
 - `AGENTS.md` (krátke): inspect, len `dispatch_rules.md`, žiadne vymyslené vozidlo, refuse red.
-- Draft skill text pre Mariana (kroky: inspect → lookup_rule → `python3 dispatch.py`).
+- S-05 Grok stack: skill, protect-rules hook (project + plugin), MCP doctor/`lookup_rule`, `python pipelines/show_lab.py`. Plugin **bez** `.mcp.json`.
 
-**Ondrej**
+**Peťo (S-02 engine)**
 - `dispatch.py`:
-  - `python3 dispatch.py` — oba joby
-  - `python3 dispatch.py J-01`
+  - `python dispatch.py` — oba joby
+  - `python dispatch.py J-01`
   - stdout: job, vehicle alebo refuse, rule id, quoted riadok
 - Import `handle` z `rules_mcp.py` (lookup_rule). Žiadne hardcoded vety DSP-*.
 
@@ -65,28 +63,26 @@ Plán musí povedať:
   - T-12 sa nepriradí (busy)
 - Beh: `python3 -m unittest test_dispatch -v`
 
-**Peťo**
+**Peťo (S-04 + S-11, after S-02)**
 - Checklist must-show (inspect, AGENTS, plan, skill, hook, MCP, script, test).
-- Špec hooku pre Mariana: PreToolUse deny na zápis `dispatch_rules.md` a `*_rules.md`.
+- Špec hooku pre Jakuba (S-05): PreToolUse deny na zápis `dispatch_rules.md` a `*_rules.md`.
 - Runbook 3 minútového dema (čo kliknúť / spustiť, čo povedať).
+- S-11: event loop on top of `dispatch_job` (not a second engine).
 
-**Marian** (hlavný balík)
-1. `grok mcp add --scope project rules -- python3 rules_mcp.py` (trust áno).
-2. Skill `.grok/skills/dispatch-desk/SKILL.md` (z Jakubovho draftu).
-3. Hook `.grok/hooks/` podľa Peťovej špecifikácie.
-4. Plugin `.grok/plugins/dispatch-desk/` = skill + hook + `.mcp.json`.
-5. Live demo: `dispatch.py` naživo, alebo tenký `dispatch_server.py` (pôvodné UI, **nekopírovať** workshop HTML).
-6. `show_lab.sh` — vypíše must-show cesty.
-7. Integrácia: script Ondreja + testy Mareka prechádzajú na jednom stroji.
-8. **Drive live demo** pred porotou (Peťo hovorí checklist, Marek ukáže test).
+**Marian** (S-12 driver + S-14 server + demo)
+1. S-12 electric driver (telemetry, CS-2 charge). Not assignment.
+2. Optional `dispatch_server.py` / live desk (pôvodné UI, **nekopírovať** workshop HTML).
+3. Integrácia: script Peťa + testy Mareka + Jakubov Grok stack na jednom stroji.
+4. **Drive live demo** pred porotou (Peťo hovorí checklist, Marek ukáže test, Jakub ukáže skill/hook/MCP).
 
 ## Live demo (3–4 min) — kto čo robí
 
-1. **Peťo** — `./show_lab.sh` / `grok inspect` (must-show).
-2. **Ondrej** — `python3 dispatch.py` (J-01/J-02 → T-11, citát).
+1. **Peťo** — `python pipelines/show_lab.py` / `grok inspect` (must-show).
+2. **Peťo** — `python dispatch.py` (J-01/J-02 → T-11, citát).
 3. **Marek** — `python3 -m unittest test_dispatch -v` (T-14 refused).
-4. **Marian** — MCP `lookup_rule` + plugin / prípadne UI.
-5. **Jakub** — jedna veta: rozhodnutie je z `dispatch_rules.md`, nie z modelu.
+4. **Jakub** — MCP `lookup_rule` + skill/hook/plugin.
+5. **Marian** — UI / driver, ak beží; inak CLI.
+6. **Jakub** — jedna veta: rozhodnutie je z `dispatch_rules.md`, nie z modelu.
 
 ## Done when (lab)
 
@@ -94,13 +90,17 @@ Plán musí povedať:
 - T-14 refused.
 - Zoznam must-show na laptope.
 
-## Marian — tvoj backlog (ak ti znova dajú málo)
+## Jakub — S-05 backlog
 
-- [ ] MCP add + `grok mcp list` ukáže `rules`
-- [ ] skill
-- [ ] hook
-- [ ] plugin pack
-- [ ] show_lab.sh
+- [ ] skill (project + plugin)
+- [ ] hook (project + plugin)
+- [ ] plugin pack (skill + hook, no `.mcp.json`)
+- [ ] `grok mcp list` ukáže `rules` (config už existuje — nepridávať znova ak doctor je green)
+- [ ] `python pipelines/show_lab.py`
+
+## Marian — demo / wow
+
+- [ ] S-12 driver
 - [ ] live UI alebo čistý beh scriptu na druhom okne
 - [ ] dry-run dema s Peťom
-- [ ] záloha: ak padne UI, demo ide z `python3 dispatch.py`
+- [ ] záloha: ak padne UI, demo ide z `python dispatch.py`

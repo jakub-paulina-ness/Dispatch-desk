@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| **Owner** | Marian |
+| **Owner** | Jakub |
 | **Layer** | A — graded (must-show 4, 5, 6 + show_lab) |
 | **Status** | done |
 | **Blocked on** | [S-00](S-00-contracts.md) and architecture hook/skill contract. **Not** blocked on S-04. MCP config already exists. |
@@ -10,7 +10,7 @@
 
 ## Goal
 
-As integration owner, I want skill + protect-rules hook shipped twice (project + plugin), live `rules__lookup_rule`, and `python pipelines/show_lab.py` printing the eight paths.
+As Grok-stack owner, I want skill + protect-rules hook shipped twice (project + plugin), live `rules__lookup_rule`, and `python pipelines/show_lab.py` printing the eight paths.
 
 ## Files
 
@@ -33,7 +33,7 @@ Do not regress `.grok/config.toml`: `command = "python"`, `args = ["instructions
 
 ## Parallel
 
-S-12 driver is your wow story. Do not let charging delay this stack. S-14 server is last.
+S-01 `AGENTS.md` is your other Layer A story. This stack is already on `main`. S-12/S-14 stay Marian’s.
 
 ## Out of scope
 
