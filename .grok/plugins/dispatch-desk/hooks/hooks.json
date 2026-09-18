@@ -19,6 +19,11 @@
             "type": "command",
             "command": "python \"${GROK_PLUGIN_ROOT}/hooks/protect_rules.py\"",
             "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "python \"${GROK_PLUGIN_ROOT}/hooks/protect_vehicles.py\"",
+            "timeout": 5
           }
         ]
       }

@@ -7,6 +7,7 @@ MUST_SHOW = r"""MUST-SHOW  (Dispatch-desk)
 [4] skill     .grok\skills\dispatch-desk\SKILL.md
               .grok\plugins\dispatch-desk\skills\dispatch-desk\SKILL.md
 [5] hook      .grok\hooks\protect-rules.json
+              .grok\hooks\protect-vehicles.json
               .grok\plugins\dispatch-desk\hooks\hooks.json
 [6] MCP       .grok\config.toml  [mcp_servers.rules]  tool rules__lookup_rule
               (plugin does not ship .mcp.json)

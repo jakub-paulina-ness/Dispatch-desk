@@ -15,7 +15,7 @@ Before writing files, list and read the four kit files under `instructions/`:
 
 ## Hard rules
 
-1. Kit under `instructions/` is **immutable**. Do not edit those four files. A PreToolUse hook denies writes to `dispatch_rules.md` and `*_rules.md`.
+1. Kit under `instructions/` is **immutable**. Do not edit those four files. PreToolUse: `protect_rules` denies `dispatch_rules.md` / `*_rules.md`; `protect_vehicles` denies `vehicles.json`.
 2. Do not invent vehicles (no T-15) or rules (no DSP-5, no second rule file).
 3. Quotes come from `lookup_rule` / `handle()`, never from memory, never hardcoded DSP sentence bodies in `src/dispatch.py`. On a miss, fail — do not dump the rule file.
 4. Status `red` → **REFUSE**, cite DSP-3. T-14 is never assigned.

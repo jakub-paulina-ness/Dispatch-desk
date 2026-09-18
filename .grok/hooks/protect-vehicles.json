@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "write|Write|Edit|search_replace|Bash|run_terminal_command",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"${GROK_WORKSPACE_ROOT}/.grok/hooks/protect_vehicles.py\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}
