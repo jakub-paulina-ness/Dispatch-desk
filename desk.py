@@ -70,11 +70,19 @@ def load_jobs() -> list[dict]:
     return json.loads(JOBS_FILE.read_text(encoding="utf-8"))
 
 
-def get_vehicle(vehicle_id: str, busy: set[str] | None = None) -> dict | None:
+def get_vehicle(
+    vehicle_id: str,
+    busy: set[str] | None = None,
+    live: dict | None = None,
+) -> dict | None:
     for row in load_vehicles():
         if row.get("id") == vehicle_id:
             overlay = dict(row)
-            if busy and vehicle_id in busy:
+            if live:
+                for key in ("status", "hours_ok", "range_km"):
+                    if key in live:
+                        overlay[key] = live[key]
+            elif busy and vehicle_id in busy:
                 overlay["status"] = "busy"
             return overlay
     return None
@@ -108,9 +116,17 @@ def gates(job: dict, vehicle: dict | None) -> list[dict]:
     ]
 
 
-def refuse(job: dict, vehicle_id: str | None, rule_id: str, query: str, reason: str) -> dict:
+def refuse(
+    job: dict,
+    vehicle_id: str | None,
+    rule_id: str,
+    query: str,
+    reason: str,
+    busy: set[str] | None = None,
+    live: dict | None = None,
+) -> dict:
     ident, quote = quoted(rule_id, query)
-    vehicle = get_vehicle(vehicle_id) if vehicle_id else None
+    vehicle = get_vehicle(vehicle_id, busy, live) if vehicle_id else None
     return {
         "kind": "decision",
         "decision": "Refuse",
@@ -142,13 +158,20 @@ def assign(job: dict, vehicle: dict) -> dict:
     }
 
 
-def decide_pair(job_id: str, vehicle_id: str, busy: set[str] | None = None) -> dict:
+def decide_pair(
+    job_id: str,
+    vehicle_id: str,
+    busy: set[str] | None = None,
+    live: dict | None = None,
+) -> dict:
     job = get_job(job_id)
     if job is None:
         raise KeyError(f"Unknown job {job_id}")
-    vehicle = get_vehicle(vehicle_id, busy)
+    vehicle = get_vehicle(vehicle_id, busy, live)
     if vehicle is None:
-        return refuse(job, vehicle_id, "DSP-4", "invent", "Vehicle is not in vehicles.json.")
+        return refuse(
+            job, vehicle_id, "DSP-4", "invent", "Vehicle is not in vehicles.json.", busy, live
+        )
     if vehicle.get("status") == "red":
         return refuse(
             job,
@@ -156,6 +179,8 @@ def decide_pair(job_id: str, vehicle_id: str, busy: set[str] | None = None) -> d
             "DSP-3",
             "red",
             "Status red is out of service.",
+            busy,
+            live,
         )
     if vehicle.get("status") != "free" or not vehicle.get("hours_ok"):
         return refuse(
@@ -164,6 +189,8 @@ def decide_pair(job_id: str, vehicle_id: str, busy: set[str] | None = None) -> d
             "DSP-1",
             "free",
             "Vehicle is not free with hours_ok true.",
+            busy,
+            live,
         )
     if not (int(job.get("km") or 0) < int(vehicle.get("range_km") or 0)):
         return refuse(
@@ -172,17 +199,25 @@ def decide_pair(job_id: str, vehicle_id: str, busy: set[str] | None = None) -> d
             "DSP-2",
             "range",
             "Job distance is not less than vehicle range_km.",
+            busy,
+            live,
         )
     return assign(job, vehicle)
 
 
-def decide_job(job_id: str, busy: set[str] | None = None) -> dict:
+def decide_job(
+    job_id: str,
+    busy: set[str] | None = None,
+    fleet: dict[str, dict] | None = None,
+) -> dict:
     job = get_job(job_id)
     if job is None:
         raise KeyError(f"Unknown job {job_id}")
     refusals: list[dict] = []
     for row in load_vehicles():
-        result = decide_pair(job_id, str(row.get("id") or ""), busy)
+        vid = str(row.get("id") or "")
+        live = (fleet or {}).get(vid)
+        result = decide_pair(job_id, vid, busy, live)
         if result["decision"] == "Assign":
             return result
         refusals.append(result)
