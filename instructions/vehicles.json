@@ -1,0 +1,5 @@
+[
+  {"id": "T-11", "status": "free", "hours_ok": true, "range_km": 180},
+  {"id": "T-12", "status": "busy", "hours_ok": true, "range_km": 90},
+  {"id": "T-14", "status": "red", "hours_ok": false, "range_km": 200}
+]
