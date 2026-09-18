@@ -1,5 +1,5 @@
 {
-  "note": "Fixture for S-10/S-11/S-12 until src/dispatch.py exists. Keep in sync with S-00. Quotes match instructions/dispatch_rules.md.",
+  "note": "Fixture for S-10/S-11/S-12. Kept in sync with src/dispatcher.py + src/dispatch.py.",
   "events": [
     {
       "job_id": "J-01",
@@ -7,7 +7,10 @@
       "km": 40,
       "vehicle_id": "T-11",
       "kind": "ASSIGN",
-      "dsp_ids": ["DSP-1", "DSP-2"],
+      "dsp_ids": [
+        "DSP-1",
+        "DSP-2"
+      ],
       "quotes": {
         "DSP-1": "DSP-1. Assign only a vehicle with status free and hours_ok true.",
         "DSP-2": "DSP-2. Job distance must be less than vehicle range_km."
@@ -19,7 +22,9 @@
       "km": 40,
       "vehicle_id": "T-12",
       "kind": "SKIP",
-      "dsp_ids": ["DSP-1"],
+      "dsp_ids": [
+        "DSP-1"
+      ],
       "quotes": {
         "DSP-1": "DSP-1. Assign only a vehicle with status free and hours_ok true."
       }
@@ -30,7 +35,9 @@
       "km": 40,
       "vehicle_id": "T-14",
       "kind": "REFUSE",
-      "dsp_ids": ["DSP-3"],
+      "dsp_ids": [
+        "DSP-3"
+      ],
       "quotes": {
         "DSP-3": "DSP-3. Status red is out of service. Do not assign. Quote this rule."
       }
@@ -41,7 +48,10 @@
       "km": 160,
       "vehicle_id": "T-11",
       "kind": "ASSIGN",
-      "dsp_ids": ["DSP-1", "DSP-2"],
+      "dsp_ids": [
+        "DSP-1",
+        "DSP-2"
+      ],
       "quotes": {
         "DSP-1": "DSP-1. Assign only a vehicle with status free and hours_ok true.",
         "DSP-2": "DSP-2. Job distance must be less than vehicle range_km."
@@ -53,7 +63,9 @@
       "km": 160,
       "vehicle_id": "T-12",
       "kind": "SKIP",
-      "dsp_ids": ["DSP-1"],
+      "dsp_ids": [
+        "DSP-1"
+      ],
       "quotes": {
         "DSP-1": "DSP-1. Assign only a vehicle with status free and hours_ok true."
       }
@@ -64,7 +76,9 @@
       "km": 160,
       "vehicle_id": "T-14",
       "kind": "REFUSE",
-      "dsp_ids": ["DSP-3"],
+      "dsp_ids": [
+        "DSP-3"
+      ],
       "quotes": {
         "DSP-3": "DSP-3. Status red is out of service. Do not assign. Quote this rule."
       }
