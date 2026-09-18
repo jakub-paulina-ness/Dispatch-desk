@@ -4,7 +4,7 @@
 |---|---|
 | **Owner** | Marian |
 | **Layer** | A — graded (must-show 4, 5, 6 + show_lab) |
-| **Status** | ready |
+| **Status** | done |
 | **Blocked on** | [S-00](S-00-contracts.md) and architecture hook/skill contract. **Not** blocked on S-04. MCP config already exists. |
 | **Unblocks** | Must-show on the laptop; S-12 can proceed in parallel |
 

@@ -1,0 +1,5 @@
+{
+  "name": "dispatch-desk",
+  "description": "Fleet dispatch desk: skill and protect-rules hook. MCP stays project-scoped. Enable with grok plugin enable dispatch-desk (or Space in /plugins) after folder trust.",
+  "version": "0.1.0"
+}
