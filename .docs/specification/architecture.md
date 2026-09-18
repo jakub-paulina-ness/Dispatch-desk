@@ -5,13 +5,15 @@
 | **Document** | Dispatch Desk (Grok Enablement Workshop Track 4.1) |
 | **Author** | Jakub (architect) / Grok Build `/plan` work product |
 | **Date** | 2026-09-18 |
-| **Status** | Draft — revision 2026-09-18 (review 8f84696e); awaiting team sign-off before any implementation files |
+| **Status** | Draft — revision 2026-09-18 (user: **all data are in reference**). Canonical client pack is `.docs/reference/`. Awaiting team sign-off before engine path changes. |
 | **Repo** | `C:\Users\P3503318\Desktop\DispatchProject` |
 | **Audience** | Ondrej (dev), Marek (QA auto), Peťo (QA acceptance), Marian (integration + live demo) |
 | **Durable copy** | `.docs/specification/architecture.md` |
 | **Session plan** | Grok Build `plan.md` is ephemeral; this file is the source of truth |
 
-**Gate:** Do not write `AGENTS.md`, skill, hook, plugin, `dispatch.py`, or tests until this plan is approved. Do not edit kit files. Do not invent T-15 or DSP-5.
+**Revision (user: all data in reference):** `.docs/reference/` is the canonical client/data pack. Engine, MCP `handle()`, and sim load from there. `instructions/` is a workshop-shaped **mirror** of the four assignment files only. `locations.json` is sim-only (S-13, done). Frozen J-01/J-02 → T-11 outcomes unchanged.
+
+**Gate:** Do not invent T-15 or DSP-5. Do not put lat/lon in `locations.json`. Do not use `locations.json` in `evaluate_vehicle` / `dispatch_job`. Do not edit kit files except to keep the four-file `instructions/` mirror text-equal to reference if both exist.
 
 ---
 
@@ -19,7 +21,7 @@
 
 The lab asks for a **live dispatch desk**, not slides. Inputs are a three-vehicle roster and a two-job queue. For each job the engine assigns the first vehicle that is free, inside operating hours, and strictly within range. Vehicle T-14 is always refused as out of service. Every cited sentence must come from MCP `lookup_rule` / `rules_mcp.handle()`, never from model memory and never from hardcoded DSP strings.
 
-This repository is a mapped workshop kit: the four kit files live under `instructions/`, not the repo root. Implementation belongs in `src/` and `tests/`. The Grok agent stack (AGENTS.md, project + plugin skill, project + plugin PreToolUse hook, **project-scoped** MCP server) is what the jury must see on the laptop. The runtime that actually assigns jobs is a **deterministic Python script**. The model is an operator, not the assignment algorithm.
+This repository’s **canonical client pack** is `.docs/reference/` (brief, screenshots, roster, queue, rule book, MCP stub, sim geography). `instructions/` is a workshop-shaped **mirror** of the four assignment files only (no `locations.json`). Implementation belongs in `src/` and `tests/`. The Grok agent stack (AGENTS.md, project + plugin skill, project + plugin PreToolUse hook, **project-scoped** MCP server) is what the jury must see on the laptop. The runtime that actually assigns jobs is a **deterministic Python script**. The model is an operator, not the assignment algorithm. Charging / speed / junctions / kW are Layer B telemetry **after** ASSIGN.
 
 Expected kit outcomes (non-negotiable):
 
@@ -40,34 +42,21 @@ Track 4.1 (https://grok-enablement-workshop.grok.me/modules/hackathon/fleet) is 
 
 ### Current state (2026-09-18)
 
-Greenfield except for kit + docs + one MCP config stub:
+Canonical pack already on disk under `.docs/reference/` (see inventory below). `src/sim/driver.py` already loads `.docs/reference/locations.json` (S-13 **done**). `.grok/config.toml` currently spawns `instructions/rules_mcp.py` — retarget args to `.docs/reference/rules_mcp.py` so `RULE_FILE` is the canonical rule book (do not rewrite `command` to `python3`).
 
 ```
 DispatchProject/
-  instructions/          # KIT — immutable
-    dispatch_rules.md    # DSP-1..DSP-4
-    jobs.json            # J-01 Cluj 40, J-02 Oradea 160
-    vehicles.json        # T-11 free 180, T-12 busy 90, T-14 red 200
-    rules_mcp.py         # stdio JSON-RPC; importable handle()
-  src/                   # only .gitkeep — engine goes here
-  tests/                 # only .gitkeep — unittest goes here
-  pipelines/             # only .gitkeep — show_lab goes here
-  .agents/               # empty; unused this lab (skills live under .grok/)
-  .docs/TEAM.md          # 5-person split + demo runbook
-  .docs/reference/       # REQUIREMENTS.md, screenshots, kit copies (not runtime)
+  instructions/          # workshop mirror of four assignment files — not the source of truth
+  src/sim/driver.py      # S-12; loads .docs/reference/locations.json
+  .docs/TEAM.md
+  .docs/reference/       # CANONICAL client/data pack (Jakub analyzes this)
   .docs/specification/   # this architecture
-  .grok/config.toml      # already has [mcp_servers.rules] with command=python
-  AGENTS.md              # NOT YET — blocked on sign-off
-  dispatch.py            # NOT YET
+  .grok/config.toml      # [mcp_servers.rules] command=python; retarget args to reference
 ```
-
-There is no `dispatch.py`, no tests, no AGENTS.md, no skill, no hook, no plugin. `src/`, `tests/`, and `pipelines/` contain only `.gitkeep` (ignore those files; they are not product). `.grok/config.toml` already registers the rules MCP with the **Windows** interpreter (`python`, not `python3`). Keep that; do not rewrite it to `python3`.
-
-`.docs/reference/{dispatch_rules.md,jobs.json,vehicles.json}` match `instructions/` as **text** (newline-normalized) but are **not** byte-identical (CRLF vs LF on this `core.autocrlf=true` clone). `.docs/reference/rules_mcp.py` is a **corrupted copy** (escaped `"\\n"` instead of real newlines) and must not be used as runtime or as a gold file. Hygiene (docs PR, not engine): refresh or delete that reference copy.
 
 ### Pain points this architecture removes
 
-1. **Kit layout vs. workshop slides.** Slides assume kit files at `~/Downloads/grok/dispatch-desk`. This repo nests them under `instructions/`. Paths, MCP args, and imports must all point at `instructions/`.
+1. **Kit layout vs. this repo.** Workshop slides assume kit files at folder root. **This repo’s source of truth is `.docs/reference/`.** `instructions/` is a four-file mirror for lab inspect muscle-memory. Paths, MCP args, and `handle()` imports point at **reference**.
 2. **`python3` does not run on this laptop.** `python3` is a zero-byte Microsoft Store alias (`C:\Users\P3503318\AppData\Local\Microsoft\WindowsApps\python3.exe`) that prints "Python was not found". Real interpreter: `python` → `C:\Users\P3503318\AppData\Local\Programs\Python\Python313\python.exe` (3.13.13). TEAM.md and the workshop command both say `python3`; every runnable artifact on this machine must use `python`.
 3. **LLM-in-the-loop assignment would fail the lab.** The model must not invent T-15 / DSP-5, must not dump the whole rule file, and must not paraphrase DSP-3. A 40-line deterministic engine plus `handle()` is the only way to make T-14 refuse reproducible.
 4. **Must-show is a product constraint, not a README.** Inspect, plan, AGENTS.md, skill, hook, MCP, script, and test all have to be visible in 3–4 minutes.
@@ -76,16 +65,34 @@ There is no `dispatch.py`, no tests, no AGENTS.md, no skill, no hook, no plugin.
 
 | Source | Path / URL | Role |
 |---|---|---|
-| Workshop brief | https://grok-enablement-workshop.grok.me/modules/hackathon/fleet | Client brief |
-| Local brief | `.docs/reference/REQUIREMENTS.md` | Same content |
+| Workshop brief | https://grok-enablement-workshop.grok.me/modules/hackathon/fleet | Client brief (also REQUIREMENTS.md) |
+| **Canonical pack** | `.docs/reference/` | **All** client artifacts — see inventory |
 | Lab flow | `.docs/reference/01-lab.png` | Inspect → Plan → Rebuild → Live demo |
 | Decision table | `.docs/reference/02-rozhodnutie.png` | DSP-1→4, J-01/J-02 → T-11, T-14 refuse DSP-3 |
 | Must-show | `.docs/reference/03-ukaz.png` | 8 items + Hotovo A/B/C |
 | Team split | `.docs/TEAM.md` | Owners, demo order, "do not" list |
-| Kit | `instructions/*` | Only roster, queue, rules, MCP stub |
+| S-13 / S-00 | `.docs/stories/S-13-locations-data.md` | locations.json sim-only; **done** |
 | Grok conventions | `%USERPROFILE%\.grok\docs\user-guide\` | Skills, hooks, plugins, MCP, AGENTS.md, plan mode |
 
-`.docs/reference/` kit copies are **reading aids**, not runtime inputs and not a byte-gold. The engine reads `instructions/` only. See NFR-7.
+If `instructions/` and `.docs/reference/` disagree on the four assignment files, **reference wins**.
+
+### Canonical data (`.docs/reference/`)
+
+Every client artifact lives here. This is the pack Jakub analyzes. Do not send implementers to invent files.
+
+| File | Role | Loaded by |
+|---|---|---|
+| `REQUIREMENTS.md` | Client brief | Humans / inspect |
+| `01-lab.png` | Inspect → Plan → Rebuild → Live demo | Inspect / show_lab |
+| `02-rozhodnutie.png` | Decision table | Inspect / this plan |
+| `03-ukaz.png` | Must-show + Hotovo A/B/C | Inspect / show_lab |
+| `vehicles.json` | Roster T-11 / T-12 / T-14 | `load_vehicles()` |
+| `jobs.json` | Queue J-01 Cluj 40, J-02 Oradea 160 | `load_jobs()` |
+| `dispatch_rules.md` | DSP-1..DSP-4 only | `handle()` via PREFERRED |
+| `rules_mcp.py` | MCP stub + importable `handle()` | Engine import + Grok MCP spawn |
+| `locations.json` | Driver-sim geography + charger power. `role: driver-simulation-only`, `not_a_dispatch_rule: true` | `src/sim/driver.py` only |
+
+`locations.json` is **not** a DSP rule and **not** an eligibility input. Distance table, not GPS. Do not invent lat/lon. S-13 is **done**.
 
 ---
 
@@ -96,7 +103,7 @@ There is no `dispatch.py`, no tests, no AGENTS.md, no skill, no hook, no plugin.
 1. Deterministic assignment of J-01 and J-02 to T-11 with DSP-1 and DSP-2 quotes sourced from `handle()`.
 2. Deterministic T-14 refuse with DSP-3 quote sourced from `handle()`.
 3. Re-runnable CLI: `python dispatch.py` (both jobs) and `python dispatch.py J-01`.
-4. Unittest: `python -m unittest test_dispatch -v` — T-14 never assigned, T-12 never assigned, quotes ⊆ `instructions/dispatch_rules.md`.
+4. Unittest: `python -m unittest test_dispatch -v` — T-14 never assigned, T-12 never assigned, quotes ⊆ `.docs/reference/dispatch_rules.md`.
 5. Grok agent stack visible on the laptop: inspect, AGENTS.md, this plan, skill, PreToolUse hook, MCP `lookup_rule`, script, test.
 6. Plugin pack of **skill + hook** at `.grok/plugins/dispatch-desk/`, **and** the same skill + hook at project `.grok/skills/` + `.grok/hooks/` (TEAM.md belt-and-suspenders). Live MCP stays project-scoped (`.grok/config.toml`); plugin does **not** ship `.mcp.json` in v1.
 7. 3–4 minute live demo driven by Marian, with CLI as the fallback if any UI dies.
@@ -118,6 +125,8 @@ There is no `dispatch.py`, no tests, no AGENTS.md, no skill, no hook, no plugin.
 | Scoring / nearest-vehicle optimizer | One eligible vehicle; first-fit is enough |
 | Dumping the whole rule file on a lookup miss | `rules_mcp.py` returns `No rule line matched …` by design |
 | Starting AGENTS.md / script before this plan is approved | TEAM.md gate |
+| **DSP-5 “must charge to assign”** | Charging is telemetry **after** ASSIGN (S-13 / S-00). `locations.json` is not an eligibility input |
+| lat/lon or a GPS map in `locations.json` | Distance table only |
 
 ---
 
@@ -129,8 +138,8 @@ Requirement IDs are the contract. Every ID maps to a component and to test or de
 
 | ID | Requirement | Source | Owner |
 |---|---|---|---|
-| **FR-1** | Load roster only from `instructions/vehicles.json`. Fields used: `id`, `status`, `hours_ok`, `range_km`. | Kit, DSP-4 | Peťo |
-| **FR-2** | Load queue only from `instructions/jobs.json`. Fields used: `id`, `city`, `km`. | Kit | Peťo |
+| **FR-1** | Load roster only from `.docs/reference/vehicles.json`. Fields used: `id`, `status`, `hours_ok`, `range_km`. | Canonical pack, DSP-4 | Peťo |
+| **FR-2** | Load queue only from `.docs/reference/jobs.json`. Fields used: `id`, `city`, `km`. | Canonical pack | Peťo |
 | **FR-3** | Process jobs in JSON order. CLI with no args = all jobs; CLI with one id = that job only. | TEAM.md | Peťo |
 | **FR-4** | Evaluate vehicles in JSON order (T-11, T-12, T-14). First eligible vehicle is assigned (first-fit). | 02-rozhodnutie.png | Jakub / Peťo |
 | **FR-5 DSP-1** | Eligible only if `status == "free"` **and** `hours_ok is True`. Otherwise skip (do not assign). | `dispatch_rules.md` | Peťo |
@@ -142,13 +151,14 @@ Requirement IDs are the contract. Every ID maps to a component and to test or de
 | **FR-11** | T-12 is never ASSIGN. Skip with DSP-1 (busy). | Decision table | Marek |
 | **FR-12** | T-14 is never ASSIGN, for J-01 and for J-02. Always REFUSE with DSP-3. | Hotovo B, TEAM.md | Marek |
 | **FR-13** | ASSIGN T-11 cites DSP-1 and DSP-2, in that order. | 02-rozhodnutie.png | Peťo |
-| **FR-14** | Every quoted line is the exact `lookup_rule` hit, obtained by importing `handle` from `instructions/rules_mcp.py` and calling `method="tools/call"`, `name="lookup_rule"`. | TEAM.md, rules_mcp.py | Jakub sign-off / Peťo |
+| **FR-14** | Every quoted line is the exact `lookup_rule` hit, obtained by importing `handle` from `.docs/reference/rules_mcp.py` and calling `method="tools/call"`, `name="lookup_rule"`. | TEAM.md, rules_mcp.py | Jakub sign-off / Peťo |
 | **FR-15** | Stdout is human-readable for the demo and parseable for tests (contract in § API). | TEAM.md | Peťo / Marek |
 | **FR-16** | Re-runnable: `python dispatch.py` and `python dispatch.py J-01`. | Must-show 7 | Peťo |
 | **FR-17** | MCP tools `list_rules` and `lookup_rule` available to Grok as `rules__list_rules` / `rules__lookup_rule`. | Must-show 6, MCP naming | Jakub |
 | **FR-18** | PreToolUse hook denies writes to `dispatch_rules.md` and `*_rules.md`. | TEAM.md, Peťo spec | Peťo spec / Jakub impl |
 | **FR-19** | Optional thin HTTP wrapper `src/dispatch_server.py` calling the same engine. If it dies, demo continues on the CLI. | TEAM.md | Marian |
 | **FR-20** | `python pipelines/show_lab.py` prints the must-show paths. `.ps1` / `.sh` wrappers are optional and **not** the spoken demo command. | TEAM.md | Jakub / Peťo |
+| **FR-21** | `.docs/reference/locations.json` is Layer B only. Driver nearest-charger: `min` `km_from[city]` among stations with `km_from[city] <= remaining_range`. CS-4 is an unreachable trap. **Never** read this file in `evaluate_vehicle` / `dispatch_job`. | S-13 (done), S-00 | Marian / `src/sim/driver.py` |
 
 ### Non-functional requirements
 
@@ -160,7 +170,7 @@ Requirement IDs are the contract. Every ID maps to a component and to test or de
 | **NFR-4** | Windows runner: all documented commands use `python`, not `python3`. | This machine |
 | **NFR-5** | Stdout UTF-8. Tests accept both LF and CRLF (`splitlines()`). | Windows |
 | **NFR-6** | No network required at demo time (MCP is local stdio; engine is local files). | Lab |
-| **NFR-7** | `instructions/` is immutable (C-1). Verify with newline-normalized text (`git diff --ignore-cr-at-eol -- instructions/`). Do **not** SHA256-compare to `.docs/reference/` (already not byte-identical; `rules_mcp.py` reference copy is corrupted). | C-1 |
+| **NFR-7** | `.docs/reference/` assignment files are immutable first (C-1). If `instructions/` exists, newline-normalized text-equal to the four assignment files in reference (`git diff --ignore-cr-at-eol`). **Never SHA256.** If they drift, **reference wins**. `locations.json` lives only in reference. | C-1, KD-8 |
 | **NFR-8** | Folder trust required for project AGENTS.md, skills, hooks, project MCP, project plugins (`--trust` / `/hooks-trust`). | Grok user-guide 07/08/09/10/12 |
 | **NFR-9** | Fail closed on quote miss: if `lookup_rule` returns `No rule line matched …`, the process exits non-zero and does not invent a sentence. | rules_mcp.py comment |
 | **NFR-10** | No PII, no medical/legal/payment content. Synthetic kit ids only. | Brief |
@@ -169,10 +179,10 @@ Requirement IDs are the contract. Every ID maps to a component and to test or de
 
 | ID | Invariant | Enforcement |
 |---|---|---|
-| **C-1** | Kit files under `instructions/` are immutable: `dispatch_rules.md`, `vehicles.json`, `jobs.json`, `rules_mcp.py`. | AGENTS.md + PreToolUse hook + human review. Do not "fix" the shebang. |
-| **C-2** | Quotes ⊆ lines of `instructions/dispatch_rules.md`. No paraphrases. | Marek test; `handle()` is the only quote source |
+| **C-1** | Canonical assignment files under `.docs/reference/` are immutable: `dispatch_rules.md`, `vehicles.json`, `jobs.json`, `rules_mcp.py`, plus sim-only `locations.json` (schema frozen, S-13 done). `instructions/` mirror of the four assignment files is also not a playground. | AGENTS.md + PreToolUse hook + human review. Do not "fix" the shebang. Do not add lat/lon. |
+| **C-2** | Quotes ⊆ lines of `.docs/reference/dispatch_rules.md`. No paraphrases. | Marek test; `handle()` is the only quote source |
 | **C-3** | `dispatch.py` must not contain the DSP sentence bodies as string literals (e.g. `"Status red is out of service"`). Rule **ids** (`"DSP-3"`) as lookup queries are allowed. | Marek source grep |
-| **C-4** | Import `handle` from the kit module on disk (`instructions/rules_mcp.py`), not a copy. `RULE_FILE` is resolved **next to that module** via `PREFERRED = (payer_rules.md, dispatch_rules.md, rights_rules.md, policy-excerpt.md)` then a skip-list fallback — on this kit that is `instructions/dispatch_rules.md`. A copied module would look beside the copy and miss the rule file. | Code review / Jakub sign-off |
+| **C-4** | Import `handle` from the canonical module `.docs/reference/rules_mcp.py`, not a copy under `src/` and not the `instructions/` mirror. `RULE_FILE` is resolved **next to that module** via `PREFERRED = (payer_rules.md, dispatch_rules.md, rights_rules.md, policy-excerpt.md)` then a skip-list fallback — that is `.docs/reference/dispatch_rules.md`. A copied module would look beside the copy and miss the rule file. | Code review / Jakub sign-off |
 | **C-5** | Do not mutate vehicle `status` after assignment. J-01 and J-02 both see T-11 as free. | Engine design; test FR-9 and FR-10 together |
 | **C-6** | DSP evaluation order is DSP-3 (red) → DSP-1 (free ∧ hours_ok) → DSP-2 (km < range). DSP-4 is structural (iteration universe). | This document |
 | **C-7** | T-14 is reported as `REFUSE` (reserved word), never `SKIP` and never `ASSIGN`. | Stdout contract |
@@ -188,7 +198,7 @@ Mapped from `.docs/reference/03-ukaz.png` and the workshop brief. Evidence is wh
 
 | ID | Must-show | Laptop evidence | Owner during demo |
 |---|---|---|---|
-| **MS-1** | inspect | Open empty-ish folder, list `instructions/` four kit files **before** claiming we wrote them. `show_lab.py` reprints the list. Session history / this plan records inspect-first. | Peťo |
+| **MS-1** | inspect | List `.docs/reference/` **before** claiming we wrote files: four assignment files + `locations.json` + `REQUIREMENTS.md` + screenshots 01–03. `show_lab.py` reprints that list. `instructions/` may be shown as the four-file mirror. | Peťo |
 | **MS-2** | AGENTS.md | Repo-root `AGENTS.md` exists; `grok inspect` lists it as a project instruction. Short: inspect first, only `dispatch_rules.md`, no invented vehicles, refuse red, quotes via lookup_rule, `python` not `python3`. | Jakub |
 | **MS-3** | plan | This document + Grok `/plan` approval. Do not start implementation files before sign-off. | Jakub |
 | **MS-4** | skill | **Both** `.grok/skills/dispatch-desk/SKILL.md` **and** `.grok/plugins/dispatch-desk/skills/dispatch-desk/SKILL.md`. YAML frontmatter `name` + `description`. Steps: inspect → lookup_rule → `python dispatch.py` → cite DSP. Project skill covers the 3-minute demo if the plugin is off/untrusted. | Jakub |
@@ -259,7 +269,7 @@ Why T-14 quotes DSP-3 even though DSP-1 also fails: DSP-3 is the specific out-of
 | **KD-5** | Stdout vocabulary: `ASSIGN` / `SKIP` / `REFUSE`. T-14 is always `REFUSE`; T-12 is always `SKIP` **and is printed** (not optional). | Closed (was Q-1). Distinguishes out-of-service from busy. Hotovo A and B on one command. |
 | **KD-6** | Quotes **only** via `from rules_mcp import handle` + `tools/call` `lookup_rule`. Query = `"DSP-1"` … `"DSP-4"`. | TEAM.md sign-off item. Verified hits on this kit. |
 | **KD-7** | Engine lives in `src/dispatch.py`. Root `dispatch.py` and `test_dispatch.py` are **thin shims**. Tests and the shim both `sys.path.insert(src)` then `import dispatch` (one module object). No `src/__init__.py`. Never `import src.dispatch`. | Closed (was Q-10). TEAM.md CWD commands + this repo's `src/` / `tests/` layout. Dual import identity is forbidden (R-11). |
-| **KD-8** | Kit path is `instructions/`. MCP args = `instructions/rules_mcp.py`. Import path inserts `instructions/` so `RULE_FILE` resolves next to the kit module via `PREFERRED`. | Workshop kit-at-root does not apply here. |
+| **KD-8** | **Canonical data path is `.docs/reference/`.** `load_vehicles` / `load_jobs` read `.docs/reference/vehicles.json` and `.docs/reference/jobs.json`. Quotes via `handle()` imported from `.docs/reference/rules_mcp.py` so `RULE_FILE` is `.docs/reference/dispatch_rules.md` via `PREFERRED`. MCP args = `.docs/reference/rules_mcp.py`. Sim loads `.docs/reference/locations.json` only. `instructions/` is a four-file **mirror**, not the source of truth; it must not contain `locations.json`. If the trees drift, **reference wins**. | User decision 2026-09-18: “all data are in reference.” Workshop inspect historically named four kit files; the mirror preserves that shape. |
 | **KD-9** | Runnable commands use **`python`**, never `python3`, on this laptop. Pin full `Python313\python.exe` in MCP **and hook** at the first `grok mcp doctor` / hook-spawn failure — not as a surprise mid-demo. | `python3` is a Store stub. `where.exe python` also lists `WindowsApps\python.exe` **after** 3.13; Grok spawn PATH can hit the stub (R-10). |
 | **KD-10** | **One live MCP:** project `.grok/config.toml` `[mcp_servers.rules]` (already present; must-show 6). Plugin **omits** `.mcp.json` in v1. **Skill + hook ship twice:** project `.grok/skills/` + `.grok/hooks/` **and** `.grok/plugins/dispatch-desk/` (TEAM.md). | User-guide 07 merge order is config.toml > Claude > Cursor > **project-root** `.mcp.json`. Plugin `.mcp.json` is **not** in that table; duplicate name `rules` is unverified. Workshop “may pack MCP” is optional; packing skill+hook still satisfies the plugin must-show. Project copies keep MS-4/MS-5 if the plugin is off (plugins default off; need trust+enable). |
 | **KD-11** | Hook is **Python**, not bash. Matcher: `write\|Write\|Edit\|search_replace\|Bash\|run_terminal_command`. Command uses `${GROK_PLUGIN_ROOT}` / `${GROK_WORKSPACE_ROOT}` so the script is found. Deny on **basename** of `file_path`/`path`/`target_file`/`old_string` matching `dispatch_rules.md` or `*_rules.md`. Do **not** parse `toolInput.command`. | Fail-open if the script is missing (cwd ≠ hook dir). Matcher is not documented case-insensitive; `Write` misses `write`. Dropping the unfinished shell write-position parser avoids both missing `python -c` writes and denying `Get-Content` reads. Live demo is `search_replace` / `write`. |
@@ -269,6 +279,7 @@ Why T-14 quotes DSP-3 even though DSP-1 also fails: DSP-3 is the specific out-of
 | **KD-15** | Compare `hours_ok is True` (identity), not truthiness. | Closed (was Q-7). A future `"yes"` string must fail closed. |
 | **KD-16** | DSP-2 is strict `job.km < range_km`. Equality is ineligible. No kit row hits equality. | Closed (was Q-8). FR-6. |
 | **KD-17** | First-fit lives **only** in `dispatch_job`. `evaluate_vehicle` has no `already_assigned` argument and may return ASSIGN for every eligible truck. `dispatch_job` keeps the first ASSIGN and converts later ASSIGN results to `SKIP` with **empty** `dsp_ids` (no RULE line, never `lookup_rule("already assigned")`). This kit has one eligible vehicle, so the leftover branch is latent. | `format_job_block` only calls `lookup_rule` for DSP ids. |
+| **KD-18** | All client data canonical in `.docs/reference/`. `locations.json` is sim-only (`role: driver-simulation-only`, `not_a_dispatch_rule: true`). Assignment still DSP-1..4 from the reference rule book. Charging, speed, junctions, kW are telemetry **after** ASSIGN. | User override of the previous “reference is reading-aid” decision. S-13 already done; `src/sim/driver.py` already loads this path. |
 
 ---
 
@@ -278,16 +289,26 @@ Why T-14 quotes DSP-3 even though DSP-1 also fails: DSP-3 is the specific out-of
 
 ```mermaid
 flowchart LR
-  subgraph Kit["instructions/  — IMMUTABLE"]
+  subgraph Ref[".docs/reference/  CANONICAL"]
     V["vehicles.json"]
     J["jobs.json"]
     R["dispatch_rules.md"]
-    MCP["rules_mcp.py\nlist_rules / lookup_rule\nhandle(req) -> dict"]
+    MCP["rules_mcp.py\nhandle / lookup_rule"]
+    LOC["locations.json\nsim-only — not DSP"]
+    BRF["REQUIREMENTS.md + 01..03 png"]
+  end
+
+  subgraph Mirror["instructions/  four-file mirror"]
+    M4["vehicles, jobs, dispatch_rules, rules_mcp"]
   end
 
   subgraph Engine["src/  — Peťo"]
     D["dispatch.py\nfirst-fit DSP-3→1→2"]
     SHIM["../dispatch.py shim"]
+  end
+
+  subgraph Sim["src/sim/  — Marian S-12"]
+    DR["driver.py"]
   end
 
   subgraph QA["tests/  — Marek"]
@@ -297,30 +318,21 @@ flowchart LR
   subgraph Agent["Grok Build agent stack"]
     AG["AGENTS.md — Jakub"]
     SK["skill: .grok/skills + plugin"]
-    HK["PreToolUse protect_rules.py\nproject + plugin"]
-    PL[".grok/plugins/dispatch-desk/\nskill+hook, no .mcp.json"]
-    CFG[".grok/config.toml\nmcp_servers.rules — live MCP"]
-  end
-
-  subgraph Demo["pipelines/  — Marian / Peťo"]
-    SL["show_lab.py"]
-    OPT["optional dispatch_server.py"]
+    HK["PreToolUse protect_rules.py"]
+    CFG[".grok/config.toml\nmcp_servers.rules"]
   end
 
   V --> D
   J --> D
   D -->|"import handle"| MCP
   MCP --> R
+  LOC --> DR
   SHIM --> D
   T --> SHIM
   T --> R
-  CFG -->|"spawns python instructions/rules_mcp.py"| MCP
+  CFG -->|"python .docs/reference/rules_mcp.py"| MCP
   SK -->|"run python dispatch.py"| SHIM
-  HK -->|"deny writes"| R
-  SL --> AG
-  SL --> SK
-  SL --> HK
-  OPT --> D
+  HK -->|"deny *_rules.md basename"| R
 ```
 
 Two runtimes share one rule reader:
@@ -328,7 +340,7 @@ Two runtimes share one rule reader:
 1. **Engine path (graded assignment):** `python dispatch.py` → `src/dispatch.py` → `handle()` in-process → stdout.
 2. **Agent path (must-show MCP):** Grok session → `rules__lookup_rule` → stdio JSON-RPC to the same `rules_mcp.py` → same markdown lines.
 
-They must not drift: both call the same module against the same `dispatch_rules.md`.
+They must not drift: both call `.docs/reference/rules_mcp.py` against `.docs/reference/dispatch_rules.md`. The `instructions/` copies of those two files are a mirror only.
 
 ### Target repo layout
 
@@ -337,14 +349,15 @@ DispatchProject/
   AGENTS.md                          # Jakub — after sign-off
   dispatch.py                        # Peťo — 5-line shim
   test_dispatch.py                   # Marek — shim: from tests.test_dispatch import *
-  instructions/                      # KIT — do not edit
+  instructions/                      # workshop MIRROR of four assignment files (no locations.json)
     dispatch_rules.md
     jobs.json
     vehicles.json
     rules_mcp.py
   src/
-    dispatch.py                      # Peťo — engine + CLI main()
+    dispatch.py                      # Peťo — engine + CLI main(); loads .docs/reference/
     dispatch_server.py               # Marian — OPTIONAL, after CLI is green
+    sim/driver.py                    # Marian S-12; loads .docs/reference/locations.json
   tests/
     __init__.py                      # empty
     test_dispatch.py                 # Marek
@@ -366,8 +379,8 @@ DispatchProject/
   .docs/
     TEAM.md
     specification/architecture.md    # this file
-    reference/                       # screenshots + kit copies
-    stories/                         # parallel backlog S-00..S-14 (README.md)
+    reference/                       # CANONICAL pack: brief, png, vehicles, jobs, rules, MCP, locations
+    stories/                         # parallel backlog S-00..S-14 (README.md); S-13 done
     plans/                           # unused; durable plan is specification/
 ```
 
@@ -384,16 +397,16 @@ sequenceDiagram
   participant CLI as python dispatch.py
 
   Human->>Grok: open folder / inspect (write nothing)
-  Grok->>FS: list_dir, read instructions/* (4 kit files)
-  Note over Grok: AGENTS.md: do not edit kit, do not invent vehicles
+  Grok->>FS: list_dir, read .docs/reference/* (canonical pack)
+  Note over Grok: AGENTS.md: data in .docs/reference/; do not invent vehicles
   Human->>Grok: /plan then approve this architecture
   Grok->>MCP: tools/call lookup_rule query=DSP-3
-  MCP->>FS: read instructions/dispatch_rules.md
+  MCP->>FS: read .docs/reference/dispatch_rules.md
   MCP-->>Grok: DSP-3. Status red is out of service...
   Human->>Grok: run the desk
   Grok->>CLI: python dispatch.py
-  CLI->>FS: load vehicles.json, jobs.json
-  CLI->>CLI: import handle from instructions/rules_mcp.py
+  CLI->>FS: load .docs/reference/vehicles.json, jobs.json
+  CLI->>CLI: import handle from .docs/reference/rules_mcp.py
   CLI->>CLI: lookup DSP-1, DSP-2, DSP-3
   CLI-->>Human: ASSIGN T-11 + REFUSE T-14 + quotes
   Grok->>CLI: python -m unittest test_dispatch -v
@@ -434,8 +447,9 @@ First eligible is T-11. Loop continues so Hotovo B (T-14 refuse) is on the same 
 ### Decision procedure (normative)
 
 ```text
-universe = json.load(instructions/vehicles.json)          # DSP-4
-jobs     = json.load(instructions/jobs.json)              # or the one CLI id
+universe = json.load(.docs/reference/vehicles.json)       # DSP-4
+jobs     = json.load(.docs/reference/jobs.json)           # or the one CLI id
+# locations.json is NOT read here
 
 for job in jobs:
     assigned = None
@@ -466,17 +480,17 @@ Boolean `hours_ok` is JSON `true`/`false`, compared with **`is True`** (KD-15). 
 
 ### How quotes are obtained
 
-`instructions/rules_mcp.py` is a line-delimited JSON-RPC stub. `handle(req: dict) -> dict` is importable. `RULE_FILE` is resolved **next to the kit module** via `PREFERRED = ("payer_rules.md", "dispatch_rules.md", "rights_rules.md", "policy-excerpt.md")`, then a skip-list fallback (`README.md` / `AGENTS.md` / `PLAN.md` excluded). On this kit that is `instructions/dispatch_rules.md`. Therefore:
+`.docs/reference/rules_mcp.py` is a line-delimited JSON-RPC stub. `handle(req: dict) -> dict` is importable. `RULE_FILE` is resolved **next to that module** via `PREFERRED = ("payer_rules.md", "dispatch_rules.md", "rights_rules.md", "policy-excerpt.md")`, then a skip-list fallback (`README.md` / `AGENTS.md` / `PLAN.md` excluded). On this pack that is `.docs/reference/dispatch_rules.md`. Therefore:
 
 ```python
 import sys
 from pathlib import Path
 
-KIT_DIR = Path(__file__).resolve().parent.parent / "instructions"  # from src/dispatch.py
-if str(KIT_DIR) not in sys.path:
-    sys.path.insert(0, str(KIT_DIR))
+REF_DIR = Path(__file__).resolve().parent.parent / ".docs" / "reference"  # from src/dispatch.py
+if str(REF_DIR) not in sys.path:
+    sys.path.insert(0, str(REF_DIR))
 
-from rules_mcp import handle  # noqa: E402  — kit module, not a copy
+from rules_mcp import handle  # noqa: E402  — canonical module, not a copy, not instructions/
 
 
 def lookup_rule(query: str) -> str:
@@ -518,11 +532,12 @@ Grok-side call (Marian, live demo): after `search_tool` finds it, `use_tool` wit
 
 Repo-root, short. Loaded when the folder is trusted (user-guide 12). Suggested body (implement at write time, not before approval):
 
-- Inspect `instructions/` before writing files.
-- Kit files are immutable.
-- Only rule book: `instructions/dispatch_rules.md` (DSP-1..DSP-4). No DSP-5. No second rule file.
-- Only vehicles in `vehicles.json`. No T-15.
-- Status `red` → refuse and cite DSP-3 via `lookup_rule` / `handle()`.
+- Inspect `.docs/reference/` first (canonical pack). `instructions/` is a four-file mirror only.
+- Canonical files under `.docs/reference/` are immutable. No lat/lon. No DSP-5.
+- Only rule book: `.docs/reference/dispatch_rules.md` (DSP-1..DSP-4).
+- Only vehicles in `.docs/reference/vehicles.json`. No T-15.
+- `locations.json` is sim-only — never an eligibility input.
+- Status `red` → refuse and cite DSP-3 via `lookup_rule` / `handle()` from `.docs/reference/rules_mcp.py`.
 - Quotes are exact `handle()` lines. Never invent, never dump the whole file on a miss.
 - Interpreter: `python`. Not `python3`.
 - Engine: `src/dispatch.py`. Demo: `python dispatch.py`.
@@ -544,13 +559,13 @@ Frontmatter required (user-guide 08):
 ```markdown
 ---
 name: dispatch-desk
-description: Assign kit jobs from instructions/jobs.json to instructions/vehicles.json using DSP-1..DSP-4. Use when dispatching fleet jobs, citing dispatch rules, running lookup_rule, or demonstrating the dispatch desk. Trigger phrases: dispatch, assign vehicle, T-14, lookup_rule.
+description: Assign kit jobs from .docs/reference/jobs.json to .docs/reference/vehicles.json using DSP-1..DSP-4. Use when dispatching fleet jobs, citing dispatch rules, running lookup_rule, or demonstrating the dispatch desk. Trigger phrases: dispatch, assign vehicle, T-14, lookup_rule.
 ---
 ```
 
 Body steps (concrete):
 
-1. `list_dir` / read the four kit files under `instructions/`. Write nothing yet.
+1. `list_dir` / read `.docs/reference/` (vehicles, jobs, dispatch_rules, rules_mcp, locations.json, REQUIREMENTS, screenshots). Write nothing yet. Do not use `locations.json` for assignment.
 2. Call `rules__lookup_rule` (query `DSP-1` … `DSP-3`) — do not recite rules from memory.
 3. Run `python dispatch.py` (and `python dispatch.py J-01` if asked for one job).
 4. Run `python -m unittest test_dispatch -v`.
@@ -617,9 +632,9 @@ Matcher includes `write` (Grok Build `write` tool, `file_path`) as well as alias
 6. Otherwise `{"decision":"allow"}` and exit 0.
 7. Catch all exceptions and **deny** (explicit JSON so the hook does not fail-open). Timeout 5 s.
 
-Trust: project/plugin hooks are skipped until `/hooks-trust` or `grok --trust`. Peťo's live check: `search_replace` or `write` on `instructions/dispatch_rules.md` is denied.
+Trust: project/plugin hooks are skipped until `/hooks-trust` or `grok --trust`. Peťo's live check: `search_replace` or `write` on `.docs/reference/dispatch_rules.md` (or the `instructions/` mirror) is denied — basename match covers **both** trees.
 
-Non-blocking fixture: `tests/test_protect_rules.py` (or a method in `test_dispatch.py`) pipes synthetic PreToolUse JSON for `search_replace`, `write`, and `run_terminal_command` into `protect_rules.py` and asserts deny JSON on stdout for the first two; `run_terminal_command` with `Get-Content instructions/dispatch_rules.md` must **allow** (we do not parse `command`). Owner: Jakub with Marek; can land in PR-5.
+Non-blocking fixture: `tests/test_protect_rules.py` (or a method in `test_dispatch.py`) pipes synthetic PreToolUse JSON for `search_replace`, `write`, and `run_terminal_command` into `protect_rules.py` and asserts deny JSON on stdout for the first two; `run_terminal_command` with `Get-Content` of that file must **allow** (we do not parse `command`). Owner: Jakub with Marek; can land in PR-5.
 
 Do not over-scope the hook to `vehicles.json` / `jobs.json` / `rules_mcp.py` unless time remains — TEAM.md names rule files only. AGENTS.md still forbids editing the rest of the kit.
 
@@ -629,33 +644,34 @@ Already present:
 
 ```toml
 # .grok/config.toml  (do not change command to python3)
+# TARGET args (canonical). On disk 2026-09-18 still has instructions/rules_mcp.py — retarget.
 [mcp_servers.rules]
 command = "python"
-args = ["instructions/rules_mcp.py"]
+args = [".docs/reference/rules_mcp.py"]
 enabled = true
 ```
 
-**Do not re-run `grok mcp add` in the live demo if `grok mcp doctor rules` is already green.** Re-add with a name that exists is unspecified (overwrite vs error) and can stall the jury. Show `grok mcp list` (expect `rules (project)`) and a live `rules__lookup_rule` query `DSP-3`.
+**Live demo:** if `grok mcp doctor rules` is green **and** args already point at `.docs/reference/rules_mcp.py`, do **not** re-add — show `grok mcp list`. If args still point at the `instructions/` mirror, retarget once (edit config or `grok mcp add`) then list. Show a live `rules__lookup_rule` query `DSP-3`.
 
 If doctor is **not** green, then — and only then — add or repair:
 
 ```powershell
-grok mcp add --scope project rules -- python instructions/rules_mcp.py
+grok mcp add --scope project rules -- python .docs/reference/rules_mcp.py
 ```
 
 If Grok's spawn PATH hits the Store stub, pin:
 
 ```powershell
-grok mcp add --scope project rules -- "C:\Users\P3503318\AppData\Local\Programs\Python\Python313\python.exe" instructions/rules_mcp.py
+grok mcp add --scope project rules -- "C:\Users\P3503318\AppData\Local\Programs\Python\Python313\python.exe" .docs/reference/rules_mcp.py
 ```
 
-`rules_mcp.py` resolves `RULE_FILE` from `__file__` via `PREFERRED`, so cwd does not matter as long as the **script path** is the kit file. Project config args `instructions/rules_mcp.py` are resolved against the **workspace** cwd Grok uses for project MCP — that is the working server today.
+`rules_mcp.py` resolves `RULE_FILE` from `__file__` via `PREFERRED`, so cwd does not matter as long as the **script path** is `.docs/reference/rules_mcp.py`. Today's `.grok/config.toml` still has `args = ["instructions/rules_mcp.py"]` — that is the **mirror**. Stage 3 / MCP doctor: retarget to `.docs/reference/rules_mcp.py` (never `python3`). If doctor is already green on the old args, still retarget so quotes come from the canonical book; then `grok mcp list`.
 
 Verify before demo: `grok mcp list`, `grok mcp doctor rules`, `grok inspect`.
 
-**Plugin `.mcp.json` is omitted in v1** (KD-10). User-guide 07's merge table does **not** include plugin `.mcp.json`; packing a second server named `rules` with workspace-relative `args: ["instructions/rules_mcp.py"]` is unsafe if plugin spawn cwd is the plugin directory (`RULE_FILE` would miss). Demo line: “MCP is project-scoped; the plugin packs skill + hook.”
+**Plugin `.mcp.json` is omitted in v1** (KD-10). User-guide 07's merge table does **not** include plugin `.mcp.json`; packing a second server named `rules` with a workspace-relative script path is unsafe if plugin spawn cwd is the plugin directory (`RULE_FILE` would miss). Demo line: “MCP is project-scoped; the plugin packs skill + hook.”
 
-If a later stretch adds plugin MCP, it must (a) use an unambiguous script path such as `"${GROK_WORKSPACE_ROOT}/instructions/rules_mcp.py"`, (b) be verified with `grok mcp list` / `grok mcp doctor rules` **after** `grok plugin enable dispatch-desk`, and (c) freeze the observed duplicate-name result in `pipelines/DEMO.md`. Do not cite user-guide 07 as proof that config.toml wins.
+If a later stretch adds plugin MCP, it must (a) use `"${GROK_WORKSPACE_ROOT}/.docs/reference/rules_mcp.py"`, (b) be verified with `grok mcp list` / `grok mcp doctor rules` **after** `grok plugin enable dispatch-desk`, and (c) freeze the observed duplicate-name result in `pipelines/DEMO.md`. Do not cite user-guide 07 as proof that config.toml wins.
 
 #### Plugin pack
 
@@ -686,7 +702,7 @@ Project plugins require trust **and enable** (user-guide 09; plugins are off by 
 |---|---|---|
 | Workshop / TEAM.md | `python3 dispatch.py` | `python dispatch.py` |
 | Unittest | `python3 -m unittest test_dispatch -v` | `python -m unittest test_dispatch -v` |
-| MCP add | `grok mcp add --scope project rules -- python3 rules_mcp.py` | `grok mcp add --scope project rules -- python instructions/rules_mcp.py` |
+| MCP add | `grok mcp add --scope project rules -- python3 rules_mcp.py` | `grok mcp add --scope project rules -- python .docs/reference/rules_mcp.py` |
 | Shebang in kit | `#!/usr/bin/env python3` | Ignored on Windows; do not edit the kit |
 | `python3.exe` | Store stub, exit "Python was not found" | Never use |
 | `python.exe` | Python 3.13.13 at `...\Python313\python.exe` | Default |
@@ -713,7 +729,7 @@ If it fails to start, Marian says so and runs `python dispatch.py`. The server i
 - Workshop HTML / CSS / JS copied into this repo
 - Extra vehicles or extra DSP rules
 - A second `rules_mcp.py` under `src/`
-- Edits to `instructions/*`
+- Edits to `.docs/reference/*` (canonical) or drifting the `instructions/` mirror except to restore text-equality
 - Reverse-engineering folder
 - pip packages, Docker, databases
 - LLM prompt that "decides" T-11 vs T-14
@@ -803,7 +819,7 @@ Invariants tests will lock:
 2. Exactly one `ASSIGN` per kit job, and it is `T-11`.
 3. `ASSIGN vehicle=T-12` and `ASSIGN vehicle=T-14` never appear.
 4. `REFUSE vehicle=T-14` appears in every job block, with a `RULE DSP-3:` line.
-5. Text after `RULE DSP-n:` is a substring of `instructions/dispatch_rules.md` and equals `lookup_rule("DSP-n")`.
+5. Text after `RULE DSP-n:` is a substring of `.docs/reference/dispatch_rules.md` and equals `lookup_rule("DSP-n")`.
 6. `No rule line matched` never appears on stdout.
 
 Printing SKIP T-12 is **in scope** (demo clarity). It is not optional: the contract above includes it so tests can assert T-12 is SKIP not ASSIGN.
@@ -849,7 +865,7 @@ Miss: `text` is `No rule line matched 't-15'.` (query is lowercased in the miss 
 
 ```python
 # src/dispatch.py
-KIT_DIR: Path
+REF_DIR: Path  # = <repo>/.docs/reference
 
 def load_vehicles() -> list[dict]: ...
 def load_jobs() -> list[dict]: ...
@@ -864,7 +880,7 @@ def format_job_block(job: dict, outcomes) -> str: ...
 def main(argv: list[str] | None = None) -> int: ...
 ```
 
-`KIT_DIR = Path(__file__).resolve().parent.parent / "instructions"`. `load_vehicles()` reads `KIT_DIR / "vehicles.json"`; `load_jobs()` reads `KIT_DIR / "jobs.json"`. UTF-8.
+`REF_DIR = Path(__file__).resolve().parent.parent / ".docs" / "reference"`. `load_vehicles()` reads `REF_DIR / "vehicles.json"`; `load_jobs()` reads `REF_DIR / "jobs.json"`. UTF-8. Do **not** read `locations.json` here.
 
 Keep it one file. **No** `src/__init__.py`. The importable module name is **`dispatch`**, not `src.dispatch`.
 
@@ -890,7 +906,7 @@ import dispatch  # engine; same module object as python dispatch.py → from dis
 
 No database. No migrations. In-memory dicts from JSON.
 
-### Roster (`instructions/vehicles.json`)
+### Roster (`.docs/reference/vehicles.json`)
 
 | Field | Type | Meaning |
 |---|---|---|
@@ -899,7 +915,7 @@ No database. No migrations. In-memory dicts from JSON.
 | `hours_ok` | bool | operating hours flag |
 | `range_km` | int | max distance |
 
-### Queue (`instructions/jobs.json`)
+### Queue (`.docs/reference/jobs.json`)
 
 | Field | Type | Meaning |
 |---|---|---|
@@ -909,9 +925,34 @@ No database. No migrations. In-memory dicts from JSON.
 
 `city` is printed on stdout; it is not an input to DSP-1..4.
 
-### Rule book (`instructions/dispatch_rules.md`)
+### Rule book (`.docs/reference/dispatch_rules.md`)
 
 Four DSP lines plus a heading. `lookup_rule` is a case-insensitive substring filter per line. Heading `# Dispatch rules` is not a DSP id.
+
+### Locations (`.docs/reference/locations.json`) — Layer B only
+
+S-13 **done**. Schema on disk (do not invent fields or lat/lon):
+
+| Key | Meaning |
+|---|---|
+| `role` | `"driver-simulation-only"` |
+| `not_a_dispatch_rule` | `true` |
+| `garage` | G-0, `km_from_garage` 0, `power_kw` 22 (depot AC) |
+| `cities` | Cluj 40, Oradea 160 (matches `jobs.json` `km`) |
+| `charging_stations[]` | `id`, `name`, `km_from.{Cluj,Oradea}`, `power_kw` |
+
+| id | km Cluj | km Oradea | power_kw | Demo role |
+|---|---|---|---|---|
+| G-0 | — | — | 22 | depot start / return |
+| CS-1 | 20 | 40 | 50 | nearest after Cluj |
+| CS-2 | 60 | 20 | 150 | nearest after Oradea — demo charge |
+| CS-3 | 100 | 47 | 50 | backup |
+| CS-4 | 300 | 200 | 350 | **trap** — unreachable |
+| CS-5 | 350 | 74 | 22 | remote AC |
+
+Nearest charger (`src/sim/driver.py`, already implemented): `min` station by `km_from[city]` among those with `km_from[city] <= remaining_range`. CS-4 never wins on kit leftover range.
+
+**Forbidden:** `evaluate_vehicle` / `dispatch_job` must not import or read this file. No DSP-5.
 
 ### Runtime records (not persisted)
 
@@ -943,12 +984,13 @@ Import **`dispatch`** after inserting `src/` on `sys.path` (KD-7). Also one subp
 | **T-14-J01** | J-01 never ASSIGN T-14; has REFUSE T-14 | FR-12 |
 | **T-14-J02** | J-02 never ASSIGN T-14; has REFUSE T-14 | FR-12, MS-8 |
 | **T-12-NEVER** | neither job ASSIGN T-12 | FR-11 |
-| **T-QUOTE-SUBSET** | every `RULE` payload ⊆ `instructions/dispatch_rules.md` | C-2, FR-14 |
+| **T-QUOTE-SUBSET** | every `RULE` payload ⊆ `.docs/reference/dispatch_rules.md` | C-2, FR-14 |
 | **T-QUOTE-DSP3** | T-14 block cites DSP-3 and the exact `handle()` line | FR-7, MS-B |
 | **T-QUOTE-HANDLE** | `lookup_rule("DSP-3")` inside the test equals the stdout DSP-3 line | FR-14 |
 | **T-QUOTE-ASSIGN** | ASSIGN T-11 RULE order is DSP-1 then DSP-2; each payload equals `dispatch.lookup_rule` of that id | FR-13 |
 | **T-QUOTE-SRC** | `src/dispatch.py` source does not contain the substrings `out of service`, `hours_ok true`, `less than vehicle range` as literals. **Docstring:** comments that repeat those phrases also fail — do not document DSP sentence bodies in the engine file. | C-3 |
-| **T-LOAD-PATH** | `dispatch.KIT_DIR == Path(dispatch.__file__).resolve().parent.parent / "instructions"`; loaders read `vehicles.json` / `jobs.json` from that directory (not `.docs/reference/`) | FR-1, FR-2 |
+| **T-LOAD-PATH** | `dispatch.REF_DIR == Path(dispatch.__file__).resolve().parent.parent / ".docs" / "reference"`; loaders read `vehicles.json` / `jobs.json` from that directory (not `instructions/`) | FR-1, FR-2 |
+| **T-LOC-NOT-ENGINE** | `src/dispatch.py` does not open or mention `locations.json`; `evaluate_vehicle` / `dispatch_job` take only job + vehicle dicts | FR-21 |
 | **T-NO-INVENT** | vehicles referenced in stdout ⊆ `{T-11,T-12,T-14}` | FR-8 |
 | **T-CLI-ALL** | subprocess `python dispatch.py` exit 0, two JOB blocks | FR-16 |
 | **T-CLI-ONE** | subprocess `python dispatch.py J-01` has J-01, not J-02 | FR-3 |
@@ -958,11 +1000,11 @@ Import **`dispatch`** after inserting `src/` on `sys.path` (KD-7). Also one subp
 | **T-INDEPENDENT** | both jobs ASSIGN T-11 in one `python dispatch.py` run (roster not mutated) | C-5 |
 | **T-HOOK-FIXTURE** | stdin fixture: `search_replace`/`write` of `dispatch_rules.md` → deny JSON; `run_terminal_command` `Get-Content` of that file → allow. Non-blocking for PR-2; lands with the hook (PR-5). | FR-18, MS-5 |
 
-Do **not** assert on T-15. Do **not** write a test that requires editing the kit. Do **not** SHA256-compare `instructions/` to `.docs/reference/`.
+Do **not** assert on T-15. Do **not** write a test that requires editing the kit. Do **not** SHA256-compare `instructions/` to `.docs/reference/` (newline-normalized only; reference wins on drift). Assignment tests do **not** load `locations.json` (S-03).
 
 **Kit-limited (not a missing test):** no roster row fails DSP-2 without already failing DSP-1 (T-12 is busy first). A SKIP that cites only DSP-2 is **out of kit scope**. FR-6 is still locked by T-J02-T11 (160 < 180) plus T-QUOTE-ASSIGN (ASSIGN cites DSP-2).
 
-Hook acceptance (Peťo, manual): in a trusted Grok session, ask to `search_replace` or `write` `instructions/dispatch_rules.md`; expect deny.
+Hook acceptance (Peťo, manual): in a trusted Grok session, ask to `search_replace` or `write` `.docs/reference/dispatch_rules.md`; expect deny (basename also covers the `instructions/` mirror).
 
 ---
 
@@ -985,11 +1027,11 @@ Rejected: LLM-in-the-loop as the assigner. The model still **runs** the script a
 |---|---|---|---|
 | Workshop command / must-show 6 | Yes — already in `.grok/config.toml` | No | Yes, but duplicate name unverified |
 | "Pack into one plugin" | Skill+hook still pack; MCP is optional | Yes | Yes |
-| Spawn cwd / `RULE_FILE` | Workspace-relative args work today | Plugin cwd may miss `instructions/` | Second process may miss |
+| Spawn cwd / `RULE_FILE` | Workspace-relative `.docs/reference/rules_mcp.py` | Plugin cwd may miss the pack | Second process may miss |
 | User-guide 07 merge table | Native | Not in the table | Cannot cite 07 as “config.toml wins” |
 | Trust | folder trust | plugin trust + enable | both |
 
-Chosen: **one live server** — project `.grok/config.toml`. Plugin omits `.mcp.json` in v1. Demo line: “MCP is project-scoped; plugin packs skill + hook.” Do not register `rules2`. Stretch: if plugin MCP is added later, use `${GROK_WORKSPACE_ROOT}/instructions/rules_mcp.py` and freeze `grok mcp list` after enable.
+Chosen: **one live server** — project `.grok/config.toml` spawning `.docs/reference/rules_mcp.py`. Plugin omits `.mcp.json` in v1. Demo line: “MCP is project-scoped; plugin packs skill + hook.” Do not register `rules2`. Stretch: if plugin MCP is added later, use `${GROK_WORKSPACE_ROOT}/.docs/reference/rules_mcp.py` and freeze `grok mcp list` after enable.
 
 ### A3. First-fit vs scoring vs "best range leftover"
 
@@ -1078,7 +1120,7 @@ Everyone reads the four kit files. Nobody writes product files. This document re
 
 ### Stage 1 — Sign-off (Jakub)
 
-Team agrees KD-1..17, stdout contract, DSP order, "quotes from `handle()`". Only then AGENTS.md and code.
+Team agrees KD-1..18, stdout contract, DSP order, "quotes from `handle()`", canonical pack `.docs/reference/`. Only then AGENTS.md and engine path changes.
 
 ### Stage 2 — Parallel (after approval)
 
@@ -1098,7 +1140,7 @@ On **this** Windows machine (steps live in `pipelines/DEMO.md`):
 
 1. `python dispatch.py`
 2. `python -m unittest test_dispatch -v`
-3. `grok mcp doctor rules`. If green, **do not** `grok mcp add`. Show `grok mcp list`.
+3. Confirm MCP args are `.docs/reference/rules_mcp.py`. If still `instructions/rules_mcp.py`, retarget. Then `grok mcp doctor rules` / `grok mcp list`. Do not re-add if already on the canonical script and doctor is green.
 4. Folder trusted (`grok --trust` / `/hooks-trust`); `grok plugin enable dispatch-desk`
 5. Hook deny rehearsed (`search_replace` / `write` on `dispatch_rules.md`)
 6. If doctor or hook spawn hits Store `python`, pin `Python313\python.exe` in `.grok/config.toml` **and** the hook command (laptop-local; commit only if the team wants that path in git)
@@ -1106,7 +1148,7 @@ On **this** Windows machine (steps live in `pipelines/DEMO.md`):
 ### Marian laptop checklist (was Q-5 / Q-9)
 
 - Keep `command = "python"` until doctor fails; then pin the full path.
-- Existing `.grok/config.toml` **counts as MCP add done**. Jury-facing evidence is `grok mcp list` + live `lookup_rule`, not a re-add.
+- Retarget `args` to `.docs/reference/rules_mcp.py` if still on the `instructions/` mirror. After that, jury-facing evidence is `grok mcp list` + live `lookup_rule`, not a second add.
 
 ### Stage 4 — Dry-run (Peťo + Marian)
 
@@ -1136,14 +1178,14 @@ There is no production. Rollback = git revert of the last PR, fall back to `pyth
 | **R-3** | Hook fail-open on crash | **High** | Deny-on-exception; Peťo live deny; tiny script |
 | **R-4** | Quotes hardcoded or paraphrased | **High** | T-QUOTE-SRC + T-QUOTE-HANDLE; Jakub sign-off |
 | **R-5** | Roster mutated → J-02 cannot get T-11 | **High** | C-5; T-INDEPENDENT |
-| **R-6** | MCP spawned with `python3` or wrong cwd so RULE_FILE misses | **Med** | Project args `instructions/rules_mcp.py`; RULE_FILE via `PREFERRED` beside `__file__`; no plugin `.mcp.json`; `grok mcp doctor` |
+| **R-6** | MCP spawned with `python3` or the **mirror** script so RULE_FILE is not canonical | **Med** | Retarget args to `.docs/reference/rules_mcp.py`; RULE_FILE via `PREFERRED` beside `__file__`; no plugin `.mcp.json`; `grok mcp doctor` |
 | **R-7** | Plugin off / untrusted so plugin skill/hook invisible | **Med** | Also ship `.grok/skills/` + `.grok/hooks/` (KD-10); still enable+trust the plugin for the pack must-show |
 | **R-8** | Duplicate `rules` MCP (project + plugin) | **Low** | **Eliminated in v1:** plugin omits `.mcp.json` |
 | **R-9** | Optional UI dies in front of jury | **Med** | CLI is the demo; UI is extra |
 | **R-10** | `python` on Grok's PATH is the Store stub, not 3.13 — **hooks and MCP** | **Med** | Pin `Python313\python.exe` in hook command **and** MCP at first doctor/hook failure (KD-9) |
 | **R-11** | Tests import `dispatch` from the wrong file | **Med** | Frozen: `sys.path.insert(src)` + `import dispatch` only; T-CLI-ALL uses subprocess |
 | **R-12** | lookup query `red` vs `DSP-3` accidentally hits multiple lines later | **Low** | Query by id only |
-| **R-13** | Someone edits kit "just to add a comment" | **High** | Hook + AGENTS.md + `git diff --ignore-cr-at-eol -- instructions/` (NFR-7) |
+| **R-13** | Someone edits canonical pack "just to add a comment" | **High** | Hook + AGENTS.md + `git diff --ignore-cr-at-eol -- .docs/reference/` (NFR-7) |
 | **R-14** | show_lab.sh / .ps1 unrunnable on this PowerShell | **Med** | Spoken command is `python pipelines/show_lab.py` only (KD-13) |
 | **R-15** | Time overrun (Jakub S-05 + Marian UI) | **Med** | **Cut order:** CLI + test + project MCP + AGENTS.md + skill + hook; plugin pack next; UI last. Cut UI without guilt. PR-5 does not wait on PR-4. |
 | **R-16** | Grok assigns in chat instead of running the script | **Med** | Skill step 3 is `python dispatch.py`; Jakub's demo line |
@@ -1168,7 +1210,7 @@ Remaining optional/stretch items — they do **not** block engine work:
 
 | Req | Component | Test / demo evidence |
 |---|---|---|
-| FR-1, FR-2 | `src/dispatch.py` loaders | T-LOAD-PATH; T-NO-INVENT |
+| FR-1, FR-2 | `src/dispatch.py` loaders (`REF_DIR`) | T-LOAD-PATH; T-NO-INVENT |
 | FR-3, FR-16 | CLI `main()` | T-CLI-ALL, T-CLI-ONE |
 | FR-4 | loop order | T-ORDER |
 | FR-5 DSP-1 | `evaluate_vehicle` | T-12-NEVER, T-J01-T11 |
@@ -1187,7 +1229,8 @@ Remaining optional/stretch items — they do **not** block engine work:
 | FR-20 | `python pipelines/show_lab.py` | Peťo opening (MS-1 helper) |
 | NFR-1..3 | engine + runbook | dry-run clock |
 | NFR-4, C-12 | docs + shims + MCP | R-1 rehearsal |
-| C-1, NFR-7 | hook + AGENTS.md | `git diff --ignore-cr-at-eol -- instructions/` — not a SHA vs `.docs/reference/` |
+| C-1, NFR-7 | hook + AGENTS.md | `git diff --ignore-cr-at-eol -- .docs/reference/`; mirror vs reference newline-normalized, never SHA |
+| FR-21 | `src/sim/driver.py` + `locations.json` | S-13 done; T-LOC-NOT-ENGINE |
 | C-5 | no mutation | T-INDEPENDENT |
 | MS-1..8 | agent stack + CLI + tests | Peťo checklist |
 | MS-A/B/C | stdout + live run | Hotovo script |
@@ -1210,20 +1253,22 @@ Peťo speaks the checklist; Marian drives; others run their one command.
 
 ```
 MUST-SHOW  (DispatchProject)
-[1] inspect   instructions\{vehicles.json, jobs.json, dispatch_rules.md, rules_mcp.py}
+[1] inspect   .docs\reference\{REQUIREMENTS.md, 01-lab.png, 02-rozhodnutie.png, 03-ukaz.png,
+              vehicles.json, jobs.json, dispatch_rules.md, rules_mcp.py, locations.json}
+              (instructions\ is a four-file mirror only — no locations.json)
 [2] AGENTS.md AGENTS.md
 [3] plan      .docs\specification\architecture.md
 [4] skill     .grok\skills\dispatch-desk\SKILL.md
               .grok\plugins\dispatch-desk\skills\dispatch-desk\SKILL.md
 [5] hook      .grok\hooks\protect-rules.json
               .grok\plugins\dispatch-desk\hooks\hooks.json
-[6] MCP       .grok\config.toml  [mcp_servers.rules]  tool rules__lookup_rule
+[6] MCP       .grok\config.toml  args=.docs/reference/rules_mcp.py  tool rules__lookup_rule
               (plugin does not ship .mcp.json)
 [7] script    python dispatch.py
 [8] test      python -m unittest test_dispatch -v
 Hotovo A/B    python dispatch.py
 Do NOT use python3 on this laptop.
-Do NOT grok mcp add if doctor is already green — show grok mcp list.
+MCP: retarget to .docs/reference/rules_mcp.py if still on instructions\; then grok mcp list.
 ```
 
 ---
@@ -1305,7 +1350,9 @@ if __name__ == "__main__":
 - `.docs/reference/02-rozhodnutie.png` — decision table
 - `.docs/reference/03-ukaz.png` — must-show + Hotovo A/B/C
 - `.docs/TEAM.md` — 5-person split
-- Kit: `instructions/dispatch_rules.md`, `instructions/jobs.json`, `instructions/vehicles.json`, `instructions/rules_mcp.py`
+- Canonical pack: `.docs/reference/` (`REQUIREMENTS.md`, `01-lab.png`, `02-rozhodnutie.png`, `03-ukaz.png`, `vehicles.json`, `jobs.json`, `dispatch_rules.md`, `rules_mcp.py`, `locations.json`)
+- S-13: `.docs/stories/S-13-locations-data.md` (**done**)
+- `instructions/` — four-file workshop mirror only
 - Grok user-guide (`%USERPROFILE%\.grok\docs\user-guide\`):
   - 07 MCP servers (stdio, `--scope project`, `server__tool`)
   - 08 Skills (YAML frontmatter, project skills need trust)
@@ -1319,7 +1366,7 @@ if __name__ == "__main__":
 
 ## PR Plan
 
-Incremental, independently reviewable PRs. No PR edits kit files. No PR starts before this plan is approved except PR-0 (docs already in flight).
+Incremental, independently reviewable PRs. No PR edits the canonical pack except MCP arg retarget. **S-13 (locations.json) is already done** — not in this PR list. Engine PR loads from `.docs/reference/`.
 
 **After PR-0 approval, start in parallel:** PR-1 AGENTS.md, PR-2 engine, PR-3 tests (against this stdout contract), PR-4 runbook, PR-5 skill/hook/plugin, PR-6 show_lab. PR-2 does **not** wait on PR-1. PR-5 depends on **this document**, not PR-4. PR-6 does **not** wait on PR-5 (print frozen paths even if files are missing). There is **no PR-7** — laptop wiring is Stage 3 in `pipelines/DEMO.md`. PR-8 last and droppable.
 
@@ -1338,7 +1385,7 @@ Incremental, independently reviewable PRs. No PR edits kit files. No PR starts b
 - **Title:** `chore: add AGENTS.md for dispatch desk`
 - **Files:** `AGENTS.md`
 - **Depends on:** PR-0 approved
-- **Changes:** Short Grok project rules: inspect first, kit immutable, no invented vehicles/rules, refuse red, quotes via `lookup_rule`, use `python` not `python3`.
+- **Changes:** Short Grok project rules: inspect `.docs/reference/` first; canonical pack immutable; `instructions/` is a mirror; no invented vehicles/rules; refuse red; quotes via `lookup_rule` from `.docs/reference/rules_mcp.py`; `locations.json` sim-only; use `python` not `python3`. Align any existing AGENTS.md that still says kit path is `instructions/`.
 - **Owner:** Jakub
 - **Start gate:** PR-0. Does not block PR-2.
 
@@ -1346,8 +1393,8 @@ Incremental, independently reviewable PRs. No PR edits kit files. No PR starts b
 
 - **Title:** `feat: deterministic dispatch.py first-fit DSP-3→1→2`
 - **Files:** `src/dispatch.py`, `dispatch.py` (shim)
-- **Depends on:** PR-0 (stdout contract + KD-1..17) — **not** PR-1
-- **Changes:** Load kit from `instructions/` via `load_vehicles` / `load_jobs`. Import `handle` from `instructions/rules_mcp.py`. CLI `python dispatch.py` / `python dispatch.py J-01` / `--help`. Stdout contract. J-01/J-02 → T-11. T-14 REFUSE + DSP-3 quote. First-fit only in `dispatch_job`. No hardcoded DSP sentences. No roster mutation.
+- **Depends on:** PR-0 (stdout contract + KD-1..18) — **not** PR-1
+- **Changes:** Load from `.docs/reference/` via `load_vehicles` / `load_jobs`. Import `handle` from `.docs/reference/rules_mcp.py`. Do **not** read `locations.json`. CLI `python dispatch.py` / `python dispatch.py J-01` / `--help`. Stdout contract. J-01/J-02 → T-11. T-14 REFUSE + DSP-3 quote. First-fit only in `dispatch_job`. No hardcoded DSP sentences. No roster mutation.
 - **Owner:** Peťo
 
 ### PR-3 — Automated tests (Marek)
@@ -1355,7 +1402,7 @@ Incremental, independently reviewable PRs. No PR edits kit files. No PR starts b
 - **Title:** `test: T-14 stays refused; T-11 assigned; quotes from kit`
 - **Files:** `tests/__init__.py`, `tests/test_dispatch.py`, `test_dispatch.py` (shim)
 - **Depends on:** PR-0 for the contract; **merge** after PR-2. Author in parallel (`import dispatch` after `sys.path.insert(src)`).
-- **Changes:** Unittest cases T-J01-T11 … T-INDEPENDENT plus T-QUOTE-ASSIGN, T-LOAD-PATH, T-CLI-HELP as in § Test Strategy. Command: `python -m unittest test_dispatch -v`.
+- **Changes:** Unittest cases T-J01-T11 … T-INDEPENDENT plus T-QUOTE-ASSIGN, T-LOAD-PATH (`REF_DIR`), T-LOC-NOT-ENGINE, T-CLI-HELP. Quotes ⊆ `.docs/reference/dispatch_rules.md`. Command: `python -m unittest test_dispatch -v`.
 - **Owner:** Marek
 
 ### PR-4 — Demo runbook (Peťo)
@@ -1370,7 +1417,7 @@ Incremental, independently reviewable PRs. No PR edits kit files. No PR starts b
 
 - **Title:** `feat: dispatch-desk skill, protect-rules hook, plugin pack`
 - **Files:** `.grok/skills/dispatch-desk/SKILL.md`, `.grok/hooks/protect-rules.json`, `.grok/hooks/protect_rules.py`, `.grok/plugins/dispatch-desk/**` (`plugin.json`, skill, hooks — **no** `.mcp.json`)
-- **Depends on:** **this document** (skill steps + hook contract). Not PR-4. MCP project config already exists — do not regress it to `python3`.
+- **Depends on:** **this document** (skill steps + hook contract). Not PR-4. MCP project config: keep `command = python`; retarget `args` to `.docs/reference/rules_mcp.py` if still on the mirror.
 - **Changes:** Project + plugin skill and hook. Hook command uses `${GROK_PLUGIN_ROOT}` / `${GROK_WORKSPACE_ROOT}`. Matcher includes `write`. Basename deny. Optional T-HOOK-FIXTURE.
 - **Owner:** Jakub
 
