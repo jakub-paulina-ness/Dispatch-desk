@@ -4,7 +4,7 @@
 |---|---|
 | **Owner** | Peťo |
 | **Layer** | A — graded (must-show 7) |
-| **Status** | ready |
+| **Status** | done |
 | **Blocked on** | Architecture sign-off / [S-00](S-00-contracts.md). **Not** blocked on S-01, S-03, or UI. |
 | **Unblocks** | S-03 merge, S-11 real `dispatch_job`, S-14 |
 
